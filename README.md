@@ -1,1 +1,1 @@
-# mesh-node
+# Mesh node for the nrf5340
