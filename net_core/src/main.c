@@ -9,7 +9,6 @@
 
 #include <common.h>
 #include <radio.h>
-#include <ipc.h>
 
 #include <nrfx.h>
 #include <nrfx_clock.h>
@@ -48,8 +47,6 @@ void radio_tx_thread(void * p1, void * p2, void * p3)
 {
     LOG_INF("USB to Radio thread started");
     k_msleep(500);
-
-    NET_BUF_SIMPLE_DEFINE(buf, MAX_MESSAGE_SIZE);
     
     uint8_t rx[MAX_MESSAGE_SIZE];
     int len = 12;
@@ -58,7 +55,6 @@ void radio_tx_thread(void * p1, void * p2, void * p3)
     while (true)
     {
         radio_send(rx, len);
-        rpmsg_platform_send(&buf, 10);
         k_msleep(2000);
     }
 }
@@ -91,10 +87,6 @@ void main(void)
     init_radio();
     LOG_INF("Radio initialized");
 
-    /* RPMsg init */
-    rpmsg_platform_init();
-    LOG_INF("RPMsg initialized");
-
     /* Spawn threads */
     k_thread_create(&radio_rx_thread_data,
                     radio_rx_stack_area,
@@ -115,9 +107,4 @@ void main(void)
     LOG_INF("Mesh node on network core started.");
     
     k_msleep(2000); // Allow logs time to flush
-}
-
-void rpmsg_rx(uint8_t *data, size_t len)
-{
-    LOG_INF("RPMsg received! Len: %d", len);
 }
