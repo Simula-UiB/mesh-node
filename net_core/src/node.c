@@ -13,7 +13,7 @@ K_MSGQ_DEFINE(node_msgq, sizeof(struct node_msg), 10, 4);
 
 struct node_msg processing;
 
-void enqueue(struct node_msg msg)
+void node_enqueue(struct node_msg msg)
 {
     while (k_msgq_put(&node_msgq, &msg, K_NO_WAIT) != 0) {
         /* message queue is full: purge old data & try again */
@@ -21,16 +21,6 @@ void enqueue(struct node_msg msg)
     }
 }
 
-void node_thread(void * p1, void * p2, void * p3)
-{
-    LOG_INF("Node thread started");
-    k_msleep(500);
-
-    struct node_msg msg;
-
-    while (true)
-    {
-        k_msgq_get(&node_msgq, &msg, K_FOREVER);
-        LOG_HEXDUMP_INF(msg.data, msg.len, "Node RX data");
-    }
+void node_process_packet(struct node_msg msg) {
+    k_msgq_get(&node_msgq, &msg, K_FOREVER);
 }

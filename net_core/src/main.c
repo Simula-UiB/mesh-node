@@ -88,7 +88,24 @@ void radio_rx_thread(void * p1, void * p2, void * p3)
         LOG_HEXDUMP_DBG(radio_rx, len, "Radio RX data");
         /* Enqueue message for processing */
         msg.len = len;
-        enqueue(msg);
+        node_enqueue(msg);
+    }
+}
+
+void node_thread(void * p1, void * p2, void * p3)
+{
+    LOG_INF("Node thread started");
+    k_msleep(500);
+
+    uint8_t radio_rx[MAX_MESSAGE_SIZE];
+    struct node_msg msg = {
+        .data = radio_rx
+    };
+
+    while (true)
+    {
+        node_process_packet(msg);
+        LOG_HEXDUMP_INF(msg.data, msg.len, "Node RX data");
     }
 }
 
@@ -115,6 +132,14 @@ void main(void)
                     radio_tx_stack_area,
                     THREAD_STACK_SIZE,
                     radio_tx_thread,
+                    NULL, NULL, NULL,
+                    THREAD_PRIORITY,
+                    0, K_NO_WAIT);
+
+    k_thread_create(&node_thread_data,
+                    node_stack_area,
+                    THREAD_STACK_SIZE,
+                    node_thread,
                     NULL, NULL, NULL,
                     THREAD_PRIORITY,
                     0, K_NO_WAIT);

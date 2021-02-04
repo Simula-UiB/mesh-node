@@ -5,6 +5,6 @@ struct node_msg {
     uint8_t * data;
 };
 
-void enqueue(struct node_msg msg);
+void node_enqueue(struct node_msg msg);
 
-void process_packet();
+void node_process_packet();
