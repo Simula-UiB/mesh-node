@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include <common.h>
 #include <node.h>
 
@@ -7,18 +9,28 @@
 LOG_MODULE_REGISTER(node, GLOBAL_LOG_LEVEL);
 
 /* Queue of incoming messages waiting to be processed */
-K_MSGQ_DEFINE(message_queue, MAX_MESSAGE_SIZE, 10, 4);
+K_MSGQ_DEFINE(node_msgq, sizeof(struct node_msg), 10, 4);
 
-void init_void()
+struct node_msg processing;
+
+void enqueue(struct node_msg msg)
 {
+    while (k_msgq_put(&node_msgq, &msg, K_NO_WAIT) != 0) {
+        /* message queue is full: purge old data & try again */
+        k_msgq_purge(&node_msgq);
+    }
 }
 
-void handle_receive(uint8_t * data, uint8_t length)
+void node_thread(void * p1, void * p2, void * p3)
 {
-    LOG_HEXDUMP_INF(data, length, "Node RX data");
-}
+    LOG_INF("Node thread started");
+    k_msleep(500);
 
-void process_packet()
-{
+    struct node_msg msg;
 
+    while (true)
+    {
+        k_msgq_get(&node_msgq, &msg, K_FOREVER);
+        LOG_HEXDUMP_INF(msg.data, msg.len, "Node RX data");
+    }
 }

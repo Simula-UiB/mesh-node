@@ -76,7 +76,7 @@ void radio_rx_thread(void * p1, void * p2, void * p3)
     LOG_INF("Radio to USB thread started");
     k_msleep(500);
     uint8_t radio_rx[MAX_MESSAGE_SIZE];
-    struct ipc_msg msg = {
+    struct node_msg msg = {
         .data = radio_rx
     };
 
@@ -86,23 +86,11 @@ void radio_rx_thread(void * p1, void * p2, void * p3)
         LOG_DBG("Calling radio receive");
         size_t len = radio_receive(radio_rx, MAX_MESSAGE_SIZE);
         LOG_HEXDUMP_DBG(radio_rx, len, "Radio RX data");
-        /* Send received frame over IPC */
+        /* Enqueue message for processing */
         msg.len = len;
-        ipc_send(msg);
+        enqueue(msg);
     }
 }
-
-void node_thread(void * p1, void * p2, void * p3)
-{
-    LOG_INF("Node thread started");
-    k_msleep(500);
-    while (true)
-    {
-        LOG_DBG("Calling node process");
-        process_packet();
-    }
-}
-
 
 void main(void)
 {
