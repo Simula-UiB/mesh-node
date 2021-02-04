@@ -1,4 +1,5 @@
 #include <stdio.h>
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -6,10 +7,6 @@
 #include <zephyr.h>
 #include <logging/log.h>
 #include <logging/log_ctrl.h>
-
-#include <nrfx.h>
-#include <nrfx_clock.h>
-#include <nrfx_power.h>
 
 #include <common.h>
 #include <radio.h>
@@ -27,22 +24,6 @@ struct k_thread radio_tx_thread_data;
 
 /* Define IPC message queues (ring buffer), with size 10 */
 K_MSGQ_DEFINE(ipc_rx_msgq, sizeof(struct ipc_msg), 10, 4);
-
-/**
- * @brief Initialize power and clock peripherals
- */
-static void init_power_clock(void)
-{
-    nrfx_clock_init(NULL);
-    nrfx_power_init(NULL);
-    nrfx_clock_start(NRF_CLOCK_DOMAIN_HFCLK);
-    nrfx_clock_start(NRF_CLOCK_DOMAIN_LFCLK);
-    while (!(nrfx_clock_hfclk_is_running() &&
-            nrfx_clock_lfclk_is_running()))
-    {
-        /* Just waiting */
-    }
-}
 
 /**
  * @brief Radio TX thread entrypoint
@@ -92,10 +73,6 @@ void radio_rx_thread(void * p1, void * p2, void * p3)
 
 void main(void)
 {
-    /* NRFX init */
-    init_power_clock();
-    LOG_INF("Power and clock initialized");
-
     /* Radio init */
     init_radio();
     LOG_INF("Radio initialized");
