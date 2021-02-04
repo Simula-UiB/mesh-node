@@ -9,6 +9,7 @@
 
 #include <common.h>
 #include <radio.h>
+#include <node.h>
 
 #include <nrfx.h>
 #include <nrfx_clock.h>
@@ -21,8 +22,10 @@ LOG_MODULE_REGISTER(main, GLOBAL_LOG_LEVEL);
 
 K_THREAD_STACK_DEFINE(radio_rx_stack_area, THREAD_STACK_SIZE);
 K_THREAD_STACK_DEFINE(radio_tx_stack_area, THREAD_STACK_SIZE);
+K_THREAD_STACK_DEFINE(node_stack_area, THREAD_STACK_SIZE);
 struct k_thread radio_rx_thread_data;
 struct k_thread radio_tx_thread_data;
+struct k_thread node_thread_data;
 
 /**
  * @brief Initialize power and clock peripherals
@@ -73,7 +76,18 @@ void radio_rx_thread(void * p1, void * p2, void * p3)
     {
         LOG_DBG("Calling radio receive");
         length = radio_receive(radio_rx, MAX_MESSAGE_SIZE);
-        LOG_HEXDUMP_DBG(radio_rx, length, "Radio RX data");
+        handle_receive(radio_rx, length);
+    }
+}
+
+void node_thread(void * p1, void * p2, void * p3)
+{
+    LOG_INF("Node thread started");
+    k_msleep(500);
+    while (true)
+    {
+        LOG_DBG("Calling node process");
+        process_packet();
     }
 }
 
