@@ -7,12 +7,13 @@
 #include <logging/log.h>
 #include <logging/log_ctrl.h>
 
-#include <common.h>
-#include <radio.h>
-
 #include <nrfx.h>
 #include <nrfx_clock.h>
 #include <nrfx_power.h>
+
+#include <common.h>
+#include <radio.h>
+#include <ipc.h>
 
 LOG_MODULE_REGISTER(main, GLOBAL_LOG_LEVEL);
 
@@ -23,6 +24,9 @@ K_THREAD_STACK_DEFINE(radio_rx_stack_area, THREAD_STACK_SIZE);
 K_THREAD_STACK_DEFINE(radio_tx_stack_area, THREAD_STACK_SIZE);
 struct k_thread radio_rx_thread_data;
 struct k_thread radio_tx_thread_data;
+
+/* Define IPC message queues (ring buffer), with size 10 */
+K_MSGQ_DEFINE(ipc_rx_msgq, sizeof(struct ipc_msg), 10, 4);
 
 /**
  * @brief Initialize power and clock peripherals
@@ -42,44 +46,53 @@ static void init_power_clock(void)
 
 /**
  * @brief Radio TX thread entrypoint
+ *
+ * Forwards messages from IPC layer to Radio layer
  */
 void radio_tx_thread(void * p1, void * p2, void * p3)
 {
     LOG_INF("USB to Radio thread started");
     k_msleep(500);
-    
-    uint8_t rx[MAX_MESSAGE_SIZE];
-    int len = 12;
-    sprintf(rx, "Hello world!");
+
+    struct ipc_msg msg;
 
     while (true)
     {
-        radio_send(rx, len);
-        k_msleep(2000);
+        k_msgq_get(&ipc_rx_msgq, &msg, K_FOREVER);
+        radio_send(msg.data, msg.len);
     }
 }
 
 /**
- * @brief Radio to USB thread entrypoint
+ * @brief Radio RX thread entrypoint
+ *
+ * Forwards messages from radio layer to IPC layer
  */
 void radio_rx_thread(void * p1, void * p2, void * p3)
 {
     LOG_INF("Radio to USB thread started");
     k_msleep(500);
     uint8_t radio_rx[MAX_MESSAGE_SIZE];
-    int length;
+    struct ipc_msg msg = {
+        .data = radio_rx
+    };
 
     while (true)
     {
+        /* Wait for received frame from radio */
         LOG_DBG("Calling radio receive");
-        length = radio_receive(radio_rx, MAX_MESSAGE_SIZE);
-        LOG_HEXDUMP_DBG(radio_rx, length, "Radio RX data");
+        size_t len = radio_receive(radio_rx, MAX_MESSAGE_SIZE);
+        LOG_HEXDUMP_DBG(radio_rx, len, "Radio RX data");
+        /* Send received frame over IPC */
+        msg.len = len;
+        ipc_send(msg);
     }
 }
 
 
 void main(void)
 {
+    /* NRFX init */
     init_power_clock();
     LOG_INF("Power and clock initialized");
 
@@ -107,4 +120,17 @@ void main(void)
     LOG_INF("Mesh node on network core started.");
     
     k_msleep(2000); // Allow logs time to flush
+}
+
+/**
+ * @brief Callback for received IPC messages
+ *
+ * Forward messages to mesh network (currently directly to radio)
+ */
+void ipc_receive(struct ipc_msg msg)
+{
+    while (k_msgq_put(&ipc_rx_msgq, &msg, K_NO_WAIT) != 0) {
+        /* message queue is full: purge old data & try again */
+        k_msgq_purge(&ipc_rx_msgq);
+    }
 }

@@ -19,8 +19,7 @@ To get log output from the network core, connect the following pins on the nrf53
 
 ## Documentation for libraries
 
-- [nRF Connect SDK](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/index.html)
-- [Zephyr](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/zephyr/)
+- [Zephyr](https://docs.zephyrproject.org/latest/index.html)
 - [nrfx](https://infocenter.nordicsemi.com/topic/struct_drivers/struct/nrfx_latest.html) (Nordic specific drivers/hardware access layers)
 
 ## Structure
