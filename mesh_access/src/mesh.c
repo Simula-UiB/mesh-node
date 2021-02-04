@@ -47,6 +47,11 @@ int rpmsg_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src,
 
 int mesh_send(struct mesh_msg msg)
 {
+    if (msg.len > MAX_MESSAGE_SIZE)
+    {
+        LOG_ERR("Mesh message too long");
+        return -1;
+    }
     int ret = rpmsg_service_send(endpoint_id, msg.data, msg.len);
     if (ret < 0)
     {
