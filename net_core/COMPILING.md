@@ -2,19 +2,9 @@
 
 ### Setup
 
-Follow the setup guide for the nRF Connect SDK. Either:
-- Install through [nRF Connect for Desktop](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/gs_assistant.html). (I didn't succeed with this method, YMMV).
-- Install [manually](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/gs_installing.html).
+Follow the [Zephyr getting started guide](https://docs.zephyrproject.org/latest/getting_started/index.html), to get the `west` tool installed and to have a local copy of zephyr.
 
-You should end up with a directory named `ncs` with subdirectories like `nrf`, `zephyr`, `modules` etc. And the `west` command line tool should be installed.
-
-In `ncs/nrf` checkout version 1.4.0, and update with west:
-
-```
-> git fetch
-> git checkout v1.4.0
-> west update
-```
+Make sure zephyr is on the master branch or at least version >= 2.5.0.
 
 ### Compiling and flashing to nrf5340 Development Kit
 

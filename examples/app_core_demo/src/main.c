@@ -22,44 +22,22 @@
 
 #include <ipc/rpmsg_service.h>
 
-#include <nrfx.h>
-#include <nrfx_clock.h>
-#include <nrfx_power.h>
-
 LOG_MODULE_REGISTER(main, GLOBAL_LOG_LEVEL);
 
 static int endpoint_id;
 
-/**
- * @brief Initialize power and clock peripherals
- */
-static void init_power_clock(void)
-{
-    nrfx_clock_init(NULL);
-    nrfx_power_init(NULL);
-    nrfx_clock_start(NRF_CLOCK_DOMAIN_HFCLK);
-    nrfx_clock_start(NRF_CLOCK_DOMAIN_LFCLK);
-    while (!(nrfx_clock_hfclk_is_running() &&
-            nrfx_clock_lfclk_is_running()))
-    {
-        /* Just waiting */
-    }
-}
-
 int rpmsg_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src, 
         void *priv)
 {
-    LOG_INF("Received rpmsg message. Length: %d", len);
+    LOG_INF("Received message. Length: %d", len);
+    LOG_HEXDUMP_INF(data, len, "Message:");
 
     return RPMSG_SUCCESS;
 }
 
 void main(void)
 {
-    init_power_clock();
-    LOG_INF("Power and clock initialized");
-
-    LOG_INF("Mesh node on app core started.");
+    LOG_INF("Example app on app core started.");
 
     uint8_t msg[64];
     sprintf(msg, "Hello");
@@ -68,6 +46,7 @@ void main(void)
 
     while(1)
     {
+        // Send a message every two seconds
         k_msleep(2000);
         rpmsg_service_send(endpoint_id, msg, 5);
     }
