@@ -15,12 +15,14 @@ struct node_msg processing;
 
 void node_enqueue(struct node_msg msg)
 {
+    LOG_INF("Message added to queue");
     while (k_msgq_put(&node_msgq, &msg, K_NO_WAIT) != 0) {
         /* message queue is full: purge old data & try again */
         k_msgq_purge(&node_msgq);
     }
 }
 
-void node_process_packet(struct node_msg msg) {
+void node_process_packet(struct node_msg msg)
+{
     k_msgq_get(&node_msgq, &msg, K_FOREVER);
 }

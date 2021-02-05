@@ -43,6 +43,7 @@ void radio_tx_thread(void * p1, void * p2, void * p3)
     while (true)
     {
         k_msgq_get(&ipc_rx_msgq, &msg, K_FOREVER);
+        LOG_HEXDUMP_DBG(msg.data, msg.len, "Radio TX data from queue");
         radio_send(msg.data, msg.len);
     }
 }
