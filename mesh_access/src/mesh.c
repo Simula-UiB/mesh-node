@@ -34,9 +34,9 @@ int rpmsg_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src,
     /* Fill mesh message struct */
     uint8_t msg_data[MAX_MESSAGE_SIZE];
     struct mesh_msg msg = {
-        .data = msg_data
+        .data = msg_data,
+        .len = len
     };
-    msg.len = len;
     memcpy(msg_data, data, len);
 
     /* Call callback function with mesh message */
