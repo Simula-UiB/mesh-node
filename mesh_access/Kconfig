@@ -1,0 +1,5 @@
+menuconfig MESH_ACCESS_MODULE 
+    bool "Mesh access module"
+    select RPMSG_SERVICE
+    help
+      This option enables the mesh access module.

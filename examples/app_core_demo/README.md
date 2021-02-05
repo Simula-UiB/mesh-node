@@ -1,6 +1,6 @@
-# Example application for communicating with network core mesh node
+# Example application for using mesh node
 
-## Build and flash
+## Build and flash to the nrf5340 application core
 
 ```
 > source /path/to/zephyr/zephyr-env.sh

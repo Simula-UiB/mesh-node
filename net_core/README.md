@@ -1,4 +1,4 @@
-# Custom mesh node for the nrf5340 SoC network core
+# Custom mesh node for the nrf5340 network core
 
 ## Overview
 
@@ -16,6 +16,12 @@ To get log output from the network core, connect the following pins on the nrf53
 * CTS to P0.12
 * RxD to P0.25
 * TxD to P0.26
+
+Log output from the network will generally go to `/dev/ttyACM1`, and app core to `/dev/ttyACM2`. To open a serial port on linux do:
+
+```
+screen /dev/ttyACM1 115200
+```
 
 ## Documentation for libraries
 
