@@ -8,10 +8,10 @@ Implemented:
 
 * Radio
 * IPC
+* Mesh access layer 
 
 In progress:
 
-* Mesh access layer (See PR #2)
 * Packet processing layer
 * Coding layer
 
