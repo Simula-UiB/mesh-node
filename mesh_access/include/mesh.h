@@ -13,7 +13,7 @@ struct mesh_msg {
  *
  * @param[in] msg Mesh message struct.
  *
- * @returns 0 if message was sent. Non-zero if there was an error.
+ * @returns Number of bytes sent, or negative error code if there was an error.
  *
  */
 int mesh_send(struct mesh_msg msg);

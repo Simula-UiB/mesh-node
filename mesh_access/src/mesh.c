@@ -52,13 +52,8 @@ int mesh_send(struct mesh_msg msg)
         LOG_ERR("Mesh message too long");
         return -1;
     }
-    int ret = rpmsg_service_send(endpoint_id, msg.data, msg.len);
-    if (ret < 0)
-    {
-        /* Return error code */
-        return ret;
-    }
-    return 0;
+    /* Send IPC message. Returns number of bytes sent, or negative error code */
+    return rpmsg_service_send(endpoint_id, msg.data, msg.len);
 }
 
 /* Register endpoint before RPMsg Service is initialized. */
