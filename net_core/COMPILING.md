@@ -21,7 +21,7 @@ In a terminal, setup the environment like this (assuming ncs is in the home dire
 Then, run from the net\_core directory:
 
 ```bash
-> west build -b nrf5340pdk_nrf5340_cpunet --pristine
+> west build -p
 > west flash
 ```
 
