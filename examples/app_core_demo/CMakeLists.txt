@@ -7,8 +7,6 @@ list(APPEND ZEPHYR_EXTRA_MODULES ${CMAKE_SOURCE_DIR}/../../mesh_access/)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(NONE)
 
-include_directories(include)
-
 target_sources(app PRIVATE
     src/main.c
 )
