@@ -1,5 +1,0 @@
-#ifndef GLOABL_LOG_LEVEL
-#define GLOBAL_LOG_LEVEL LOG_LEVEL_INF
-#endif
-
-#define MAX_MESSAGE_SIZE 255
