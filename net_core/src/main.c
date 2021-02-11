@@ -8,6 +8,10 @@
 #include <logging/log.h>
 #include <logging/log_ctrl.h>
 
+#include <nrfx.h>
+#include <nrfx_clock.h>
+#include <nrfx_power.h>
+
 #include <common.h>
 #include <radio.h>
 #include <ipc.h>
@@ -26,6 +30,22 @@ struct k_thread radio_tx_thread_data;
 K_MSGQ_DEFINE(ipc_rx_msgq, sizeof(struct ipc_msg), 10, 4);
 
 /**
+ * @brief Initialize power and clock peripherals
+ */
+static void init_power_clock(void)
+{
+    nrfx_clock_init(NULL);
+    nrfx_power_init(NULL);
+    nrfx_clock_start(NRF_CLOCK_DOMAIN_HFCLK);
+    nrfx_clock_start(NRF_CLOCK_DOMAIN_LFCLK);
+    while (!(nrfx_clock_hfclk_is_running() &&
+            nrfx_clock_lfclk_is_running()))
+    {
+        /* Just waiting */
+    }
+}
+
+/**
  * @brief Radio TX thread entrypoint
  *
  * Forwards messages from IPC layer to Radio layer
@@ -40,7 +60,11 @@ void radio_tx_thread(void * p1, void * p2, void * p3)
     while (true)
     {
         k_msgq_get(&ipc_rx_msgq, &msg, K_FOREVER);
-        radio_send(msg.data, msg.len);
+        int ret = radio_send(msg.data, msg.len);
+        if (ret != 0)
+        {
+            LOG_ERR("Radio send failed with: %d", ret);
+        }
     }
 }
 
@@ -73,6 +97,10 @@ void radio_rx_thread(void * p1, void * p2, void * p3)
 
 void main(void)
 {
+    /* NRFX init */
+    init_power_clock();
+    LOG_INF("Power and clock initialized");
+
     /* Radio init */
     init_radio();
     LOG_INF("Radio initialized");
