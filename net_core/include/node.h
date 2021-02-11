@@ -1,3 +1,6 @@
+/**
+ * @brief Add a message to a queue so that it can be procecedd later.
+ */
 void node_enqueue(struct ipc_msg msg);
 
 /**

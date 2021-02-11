@@ -110,7 +110,7 @@ void node_thread(void * p1, void * p2, void * p3)
 
     while (true)
     {
-        size_t len = node_process_packet(radio_rx, MAX_MESSAGE_SIZE);
+        size_t len = node_process_packets(radio_rx, MAX_MESSAGE_SIZE);
         msg.len = len;
         LOG_HEXDUMP_INF(msg.data, msg.len, "Node RX data");
         ipc_send(msg);
