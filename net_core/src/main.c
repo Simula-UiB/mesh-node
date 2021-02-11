@@ -13,6 +13,7 @@
 #include <nrfx_power.h>
 
 #include <common.h>
+#include <msg.h>
 #include <radio.h>
 #include <ipc.h>
 #include <node.h>
@@ -63,10 +64,10 @@ void radio_tx_thread(void * p1, void * p2, void * p3)
     while (true)
     {
         k_msgq_get(&ipc_rx_msgq, &msg, K_FOREVER);
-        int ret = radio_send(msg.data, msg.len);
+        int ret = node_send(msg.data, msg.len);
         if (ret != 0)
         {
-            LOG_ERR("Radio send failed with: %d", ret);
+            LOG_ERR("Node send failed with: %d", ret);
         }
     }
 }
@@ -81,7 +82,7 @@ void radio_rx_thread(void * p1, void * p2, void * p3)
     LOG_INF("Radio to USB thread started");
     k_msleep(500);
     uint8_t radio_rx[MAX_MESSAGE_SIZE];
-    struct node_msg msg = {
+    struct ipc_msg msg = {
         .data = radio_rx
     };
 
@@ -103,14 +104,16 @@ void node_thread(void * p1, void * p2, void * p3)
     k_msleep(500);
 
     uint8_t radio_rx[MAX_MESSAGE_SIZE];
-    struct node_msg msg = {
+    struct ipc_msg msg = {
         .data = radio_rx
     };
 
     while (true)
     {
-        node_process_packet(msg);
+        size_t len = node_process_packet(radio_rx, MAX_MESSAGE_SIZE);
+        msg.len = len;
         LOG_HEXDUMP_INF(msg.data, msg.len, "Node RX data");
+        ipc_send(msg);
     }
 }
 

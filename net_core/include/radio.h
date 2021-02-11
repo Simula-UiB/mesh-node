@@ -1,7 +1,7 @@
 #include <stdint.h>
 
 /**
- * @brieg Initialize radio
+ * @brief Initialize radio
  */
 void init_radio();
 

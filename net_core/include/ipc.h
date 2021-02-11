@@ -1,12 +1,4 @@
 /**
- * @brief IPC Message struct
- */
-struct ipc_msg {
-    size_t len;
-    uint8_t * data;
-};
-
-/**
  * @brief Send message to other core with IPC
  */
 int ipc_send(struct ipc_msg msg);

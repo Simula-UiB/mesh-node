@@ -1,10 +1,12 @@
-#include <stdint.h>
+void node_enqueue(struct ipc_msg msg);
 
-struct node_msg {
-    size_t len;
-    uint8_t * data;
-};
+/**
+ * @brief Process packets that have been received by either forwarding,
+ * discarding or returning them.
+ */
+int node_process_packets(uint8_t * data, uint8_t max_length);
 
-void node_enqueue(struct node_msg msg);
-
-void node_process_packet();
+/**
+ * @brief Send a messsage over the radio with an added header.
+ */
+int node_send(uint8_t * data, uint8_t length);
