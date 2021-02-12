@@ -27,35 +27,63 @@ K_MSGQ_DEFINE(node_msgq, sizeof(struct ipc_msg), 10, 4);
 #define MAX_HOP_COUNT 10
 #define MAX_HASH_COUNT_LIMIT 100
 
+#define MAC_ADDR 1
+#define DST_MAC 2
+#define BROADCAST_ADDRESS 0
+
 uint8_t msg_count = 0;
 
 uint8_t node_send_buf[MAX_MESSAGE_SIZE + HEADER_LENGTH];
 
 void node_enqueue(struct ipc_msg msg)
 {
-    while (k_msgq_put(&node_msgq, &msg, K_NO_WAIT) != 0) {
+    while (k_msgq_put(&node_msgq, &msg, K_NO_WAIT) != 0)
+    {
         /* message queue is full: purge old data & try again */
         k_msgq_purge(&node_msgq);
     }
 }
 
-int node_process_packets(uint8_t * data, uint8_t max_length)
+void node_process_packet()
 {
     struct ipc_msg msg;
     k_msgq_get(&node_msgq, &msg, K_FOREVER);
-    if (msg.len > max_length)
+    if (msg.len < HEADER_LENGTH
+        || msg.len > MAX_MESSAGE_SIZE
+        || msg.data[HOP_COUNT_POS] > MAX_HOP_COUNT)
     {
-        msg.len = max_length;
+        LOG_DBG("Packet discarded");
+        return;
     }
-    memcpy(data, msg.data, msg.len);
-    return msg.len;
+
+    if (msg.data[DST_MAC_POS] == MAC_ADDR)
+    {
+        node_receive(msg);
+        return;
+    }
+
+    if (msg.data[DST_MAC_POS] == BROADCAST_ADDRESS)
+    {
+        node_receive(msg);
+    }
+
+    msg.data[HOP_COUNT_POS]++;
+    msg.data[SRC_MAC_POS] = MAC_ADDR;
+
+    LOG_HEXDUMP_DBG(msg.data, msg.len, "Forwarding");
+    radio_send(msg.data, msg.len);
 }
 
 int node_send(uint8_t * data, uint8_t length) {
     // TODO max message size vs max payload size
-    if (length > MAX_MESSAGE_SIZE + HEADER_LENGTH) {
+    if (length > MAX_MESSAGE_SIZE + HEADER_LENGTH)
+    {
         return -1;
     }
+    // TODO use a unique identifier
+    node_send_buf[SRC_MAC_POS] = MAC_ADDR;
+    node_send_buf[ORIGINAL_SRC_MAC_POS] = MAC_ADDR;
+    node_send_buf[DST_MAC_POS] = DST_MAC;
     node_send_buf[MSG_NUMBER_POS] = msg_count++;
     node_send_buf[HOP_COUNT_POS] = 0;
     node_send_buf[PAYLOAD_LENGTH_POS] = length;
@@ -64,5 +92,13 @@ int node_send(uint8_t * data, uint8_t length) {
     return radio_send(node_send_buf, length + HEADER_LENGTH);
 }
 
-// Notes: How to we store seen messages? How to we handle MAC adderesses?
-// How are they assigned to each node, how is the recipient chosen etc.
+void node_thread(void * p1, void * p2, void * p3)
+{
+    LOG_INF("Node thread started");
+    k_msleep(500);
+
+    while (true)
+    {
+        node_process_packet();
+    }
+}

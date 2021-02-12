@@ -98,25 +98,6 @@ void radio_rx_thread(void * p1, void * p2, void * p3)
     }
 }
 
-void node_thread(void * p1, void * p2, void * p3)
-{
-    LOG_INF("Node thread started");
-    k_msleep(500);
-
-    uint8_t radio_rx[MAX_MESSAGE_SIZE];
-    struct ipc_msg msg = {
-        .data = radio_rx
-    };
-
-    while (true)
-    {
-        size_t len = node_process_packets(radio_rx, MAX_MESSAGE_SIZE);
-        msg.len = len;
-        LOG_HEXDUMP_INF(msg.data, msg.len, "Node RX data");
-        ipc_send(msg);
-    }
-}
-
 void main(void)
 {
     /* NRFX init */
@@ -168,4 +149,15 @@ void ipc_receive(struct ipc_msg msg)
         /* message queue is full: purge old data & try again */
         k_msgq_purge(&ipc_rx_msgq);
     }
+}
+
+/**
+ * @brief Callback for received IPC messages
+ *
+ * Forward messages to mesh network (currently directly to radio)
+ */
+void node_receive(struct ipc_msg msg)
+{
+    LOG_HEXDUMP_DBG(msg.data, msg.len, "Node RX data");
+    ipc_send(msg);
 }
