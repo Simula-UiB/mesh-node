@@ -23,20 +23,18 @@
 #include <common.h>
 #include <ipc.h>
 
-
 LOG_MODULE_REGISTER(ipc, GLOBAL_LOG_LEVEL);
 
 static int endpoint_id;
 
-int rpmsg_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src, 
-        void *priv)
+int rpmsg_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src,
+             void *priv)
 {
     /* Fill IPC message struct */
     uint8_t msg_data[MAX_MESSAGE_SIZE];
     struct ipc_msg msg = {
         .data = msg_data,
-        .len = len
-    };
+        .len = len};
     memcpy(msg_data, data, len);
 
     /* Call callback function with ipc message */
@@ -61,7 +59,8 @@ int register_endpoint(const struct device *arg)
     int status;
     status = rpmsg_service_register_endpoint("mesh_node", rpmsg_cb);
 
-    if (status < 0) {
+    if (status < 0)
+    {
         LOG_ERR("Registering endpoint failed with %d", status);
         return status;
     }

@@ -14,9 +14,9 @@ LOG_MODULE_REGISTER(radio, GLOBAL_LOG_LEVEL);
 #define RF_BUFFER_PAYLOAD_OFFSET 1
 
 /* Radio transmission buffer. +1 byte for length byte. */
-uint8_t rf_tx_buf[MAX_MESSAGE_SIZE+1];
+uint8_t rf_tx_buf[MAX_MESSAGE_SIZE + 1];
 /* Radio receive buffer */
-uint8_t rf_rx_buf[MAX_MESSAGE_SIZE+1];
+uint8_t rf_rx_buf[MAX_MESSAGE_SIZE + 1];
 
 /* Binary semaphore for accessing radio for a transmission */
 struct k_sem rf_tx_completed;
@@ -30,49 +30,49 @@ void trigger_tx();
 /**
  * @brief Start radio transmission
  */
-int radio_send(uint8_t * data, uint8_t length)
+int radio_send(uint8_t *data, uint8_t length)
 {
     int ret = 0;
     /* Fill radio transmission buffer */
     memcpy(rf_tx_buf + RF_BUFFER_PAYLOAD_OFFSET, data, length);
     /* Set length */
-    rf_tx_buf[RF_BUFFER_LENGTH_OFFSET] = length+1;
+    rf_tx_buf[RF_BUFFER_LENGTH_OFFSET] = length + 1;
 
-    LOG_HEXDUMP_DBG(rf_tx_buf, length+1, "Data TX");
+    LOG_HEXDUMP_DBG(rf_tx_buf, length + 1, "Data TX");
 
     /* Get radio state */
     nrf_radio_state_t state = nrf_radio_state_get(NRF_RADIO);
-    switch (state) 
+    switch (state)
     {
-        case NRF_RADIO_STATE_RX:
-            /* Stop RX, trigger TXEN task from RXIDLE state */
-            nrf_radio_task_trigger(NRF_RADIO, NRF_RADIO_TASK_STOP);
-            trigger_tx();
-            break;
-        case NRF_RADIO_STATE_RXIDLE:
-        case NRF_RADIO_STATE_DISABLED:
-            /* Radio already in compatible state, trigger TXEN task */
-            trigger_tx();
-            break;
-        case NRF_RADIO_STATE_TXIDLE:
-            nrf_radio_packetptr_set(NRF_RADIO, rf_tx_buf);
-            nrf_radio_task_trigger(NRF_RADIO, NRF_RADIO_TASK_START);
-            break;
-        default:
-            /* Radio in incompatible state. Drop packet, for now */
-            LOG_ERR("TX Failed, incompatible state. State: %d", state);
-            k_sem_give(&rf_tx_completed);
-            ret = -EIO;
+    case NRF_RADIO_STATE_RX:
+        /* Stop RX, trigger TXEN task from RXIDLE state */
+        nrf_radio_task_trigger(NRF_RADIO, NRF_RADIO_TASK_STOP);
+        trigger_tx();
+        break;
+    case NRF_RADIO_STATE_RXIDLE:
+    case NRF_RADIO_STATE_DISABLED:
+        /* Radio already in compatible state, trigger TXEN task */
+        trigger_tx();
+        break;
+    case NRF_RADIO_STATE_TXIDLE:
+        nrf_radio_packetptr_set(NRF_RADIO, rf_tx_buf);
+        nrf_radio_task_trigger(NRF_RADIO, NRF_RADIO_TASK_START);
+        break;
+    default:
+        /* Radio in incompatible state. Drop packet, for now */
+        LOG_ERR("TX Failed, incompatible state. State: %d", state);
+        k_sem_give(&rf_tx_completed);
+        ret = -EIO;
     }
     k_sem_take(&rf_tx_completed, K_FOREVER);
     return ret;
 }
 
-int radio_receive(uint8_t * data, uint8_t max_length)
+int radio_receive(uint8_t *data, uint8_t max_length)
 {
     LOG_DBG("Radio receive started");
     k_sem_take(&rf_rx_sem, K_FOREVER);
-    uint8_t length = rf_rx_buf[RF_BUFFER_LENGTH_OFFSET]-1;
+    uint8_t length = rf_rx_buf[RF_BUFFER_LENGTH_OFFSET] - 1;
     if (length > max_length)
     {
         length = max_length;
@@ -102,7 +102,7 @@ void trigger_tx()
 /**
  * @brief Radio interrupt handler
  */
-void radio_irq_handler(void * ctx)
+void radio_irq_handler(void *ctx)
 {
     LOG_DBG("Radio IRQ");
     /* END event. Either TX or RX complete. */
@@ -119,7 +119,8 @@ void radio_irq_handler(void * ctx)
             nrf_radio_task_trigger(NRF_RADIO, NRF_RADIO_TASK_START);
 #if LOG_COUNTERS_ENABLED
             rf_rx_count++;
-            if (rf_rx_count % 25 == 0) log_counters();
+            if (rf_rx_count % 25 == 0)
+                log_counters();
 #endif
         }
         else if (NRF_RADIO_STATE_TXIDLE == state)
@@ -131,7 +132,8 @@ void radio_irq_handler(void * ctx)
             k_sem_give(&rf_tx_completed);
 #if LOG_COUNTERS_ENABLED
             rf_tx_count++;
-            if (rf_tx_count % 25 == 0) log_counters();
+            if (rf_tx_count % 25 == 0)
+                log_counters();
 #endif
         }
         else
@@ -173,7 +175,7 @@ void init_radio()
     nrf_radio_frequency_set(NRF_RADIO, 2442); // 2442 Mhz
 
     /* Set radio transmission power */
-    nrf_radio_txpower_set(NRF_RADIO, NRF_RADIO_TXPOWER_0DBM); // 0 dBm 
+    nrf_radio_txpower_set(NRF_RADIO, NRF_RADIO_TXPOWER_0DBM); // 0 dBm
 
     /* Set packet config */
     nrf_radio_packet_conf_t pkt_conf = {
@@ -187,21 +189,21 @@ void init_radio()
         .balen = 4UL,
         .big_endian = true,
         .maxlen = MAX_MESSAGE_SIZE, // Max payload length
-        .whiteen = false // Packet whitening
+        .whiteen = false            // Packet whitening
     };
     nrf_radio_packet_configure(NRF_RADIO, &pkt_conf);
 
-    /* Address */ 
+    /* Address */
     nrf_radio_base0_set(NRF_RADIO, 0xDEADBEEFUL);
     nrf_radio_prefix0_set(NRF_RADIO, 0x42U);
-    nrf_radio_txaddress_set(NRF_RADIO, 0x00U); // Transmit using logical address 0 (base0 and prefix0)
+    nrf_radio_txaddress_set(NRF_RADIO, 0x00U);   // Transmit using logical address 0 (base0 and prefix0)
     nrf_radio_rxaddresses_set(NRF_RADIO, 0x01U); // Enable RX of logical address 0
 
     /* CRC Config */
-    nrf_radio_crc_configure(NRF_RADIO, 
+    nrf_radio_crc_configure(NRF_RADIO,
                             RADIO_CRCCNF_LEN_Disabled, // Disable CRC
-                            NRF_RADIO_CRC_ADDR_INCLUDE, 
-                            0); 
+                            NRF_RADIO_CRC_ADDR_INCLUDE,
+                            0);
 
     /* Shortcuts */
     nrf_radio_shorts_enable(NRF_RADIO, NRF_RADIO_SHORT_READY_START_MASK); // Ready -> Start shortcut
@@ -212,4 +214,3 @@ void init_radio()
     /* Start rx */
     trigger_rx();
 }
-

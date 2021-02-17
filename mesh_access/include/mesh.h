@@ -1,9 +1,10 @@
 /**
  * @brief Mesh message struct
  */
-struct mesh_msg {
+struct mesh_msg
+{
     size_t len;
-    uint8_t * data;
+    uint8_t *data;
 };
 
 /**
@@ -24,4 +25,3 @@ int mesh_send(struct mesh_msg msg);
  * @param[in] msg Mesh message struct
  */
 void mesh_receive(struct mesh_msg msg);
-
