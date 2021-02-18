@@ -36,7 +36,7 @@ uint8_t node_addr[6];
 uint8_t node_dst_addr[6] = {0x84, 0xc8, 0xbd, 0xea, 0x64, 0x8a};
 //uint8_t node_dst_addr[6] = {0xc6, 0xad, 0x75, 0x07, 0xd4, 0x50};
 
-uint8_t node_broadcast_addr[6] = {0,0,0,0,0,0};
+uint8_t node_broadcast_addr[6] = {0, 0, 0, 0, 0, 0};
 
 void node_enqueue(struct ipc_msg msg)
 {
@@ -51,9 +51,7 @@ void node_process_packet()
 {
     struct ipc_msg msg;
     k_msgq_get(&node_msgq, &msg, K_FOREVER);
-    if (msg.len < HEADER_LENGTH
-        || msg.len > MAX_MESSAGE_SIZE
-        || msg.data[HOP_COUNT_POS] > MAX_HOP_COUNT)
+    if (msg.len < HEADER_LENGTH || msg.len > MAX_MESSAGE_SIZE || msg.data[HOP_COUNT_POS] > MAX_HOP_COUNT)
     {
         LOG_DBG("Packet discarded");
         return;
@@ -78,7 +76,8 @@ void node_process_packet()
     radio_send(msg.data, msg.len);
 }
 
-int node_send(uint8_t * data, uint8_t length) {
+int node_send(uint8_t *data, uint8_t length)
+{
     // TODO max message size vs max payload size
     if (length > MAX_MESSAGE_SIZE + HEADER_LENGTH)
     {
@@ -95,7 +94,7 @@ int node_send(uint8_t * data, uint8_t length) {
     return radio_send(node_send_buf, length + HEADER_LENGTH);
 }
 
-void node_thread(void * p1, void * p2, void * p3)
+void node_thread(void *p1, void *p2, void *p3)
 {
     LOG_INF("Node thread started");
     k_msleep(500);
@@ -110,7 +109,7 @@ void init_node()
 {
     for (size_t i = 0; i < 6; i++)
     {
-        node_addr[i] = NRF_FICR->DEVICEADDR[i/4] >> ((i % 4) * 8);
+        node_addr[i] = NRF_FICR->DEVICEADDR[i / 4] >> ((i % 4) * 8);
     }
     LOG_HEXDUMP_INF(node_addr, 6, "Node Address");
 }
