@@ -108,6 +108,10 @@ void main(void)
     init_radio();
     LOG_INF("Radio initialized");
 
+    /* Radio init */
+    init_node();
+    LOG_INF("Node initialized");
+
     /* Spawn threads */
     k_thread_create(&radio_rx_thread_data,
                     radio_rx_stack_area,

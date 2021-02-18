@@ -27,13 +27,16 @@ K_MSGQ_DEFINE(node_msgq, sizeof(struct ipc_msg), 10, 4);
 #define MAX_HOP_COUNT 10
 #define MAX_HASH_COUNT_LIMIT 100
 
-#define MAC_ADDR 1
-#define DST_MAC 2
-#define BROADCAST_ADDRESS 0
-
 uint8_t msg_count = 0;
 
 uint8_t node_send_buf[MAX_MESSAGE_SIZE + HEADER_LENGTH];
+
+uint8_t node_addr[6];
+
+uint8_t node_dst_addr[6] = {0x84, 0xc8, 0xbd, 0xea, 0x64, 0x8a};
+//uint8_t node_dst_addr[6] = {0xc6, 0xad, 0x75, 0x07, 0xd4, 0x50};
+
+uint8_t node_broadcast_addr[6] = {0,0,0,0,0,0};
 
 void node_enqueue(struct ipc_msg msg)
 {
@@ -56,19 +59,20 @@ void node_process_packet()
         return;
     }
 
-    if (msg.data[DST_MAC_POS] == MAC_ADDR)
+    if (memcmp(msg.data + DST_MAC_POS, node_addr, 6) == 0)
     {
         node_receive(msg);
         return;
     }
 
-    if (msg.data[DST_MAC_POS] == BROADCAST_ADDRESS)
+    if (memcmp(msg.data + DST_MAC_POS, node_broadcast_addr, 6) == 0)
     {
         node_receive(msg);
     }
 
+    // TODO TTL or Hop Count?
     msg.data[HOP_COUNT_POS]++;
-    msg.data[SRC_MAC_POS] = MAC_ADDR;
+    memcpy(msg.data + SRC_MAC_POS, node_addr, 6);
 
     LOG_HEXDUMP_DBG(msg.data, msg.len, "Forwarding");
     radio_send(msg.data, msg.len);
@@ -80,10 +84,9 @@ int node_send(uint8_t * data, uint8_t length) {
     {
         return -1;
     }
-    // TODO use a unique identifier
-    node_send_buf[SRC_MAC_POS] = MAC_ADDR;
-    node_send_buf[ORIGINAL_SRC_MAC_POS] = MAC_ADDR;
-    node_send_buf[DST_MAC_POS] = DST_MAC;
+    memcpy(node_send_buf + SRC_MAC_POS, node_addr, 6);
+    memcpy(node_send_buf + ORIGINAL_SRC_MAC_POS, node_addr, 6);
+    memcpy(node_send_buf + DST_MAC_POS, node_dst_addr, 6);
     node_send_buf[MSG_NUMBER_POS] = msg_count++;
     node_send_buf[HOP_COUNT_POS] = 0;
     node_send_buf[PAYLOAD_LENGTH_POS] = length;
@@ -101,4 +104,13 @@ void node_thread(void * p1, void * p2, void * p3)
     {
         node_process_packet();
     }
+}
+
+void init_node()
+{
+    for (size_t i = 0; i < 6; i++)
+    {
+        node_addr[i] = NRF_FICR->DEVICEADDR[i/4] >> ((i % 4) * 8);
+    }
+    LOG_HEXDUMP_INF(node_addr, 6, "Node Address");
 }
