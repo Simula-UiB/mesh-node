@@ -43,7 +43,7 @@ static void init_power_clock(void)
     nrfx_clock_start(NRF_CLOCK_DOMAIN_HFCLK);
     nrfx_clock_start(NRF_CLOCK_DOMAIN_LFCLK);
     while (!(nrfx_clock_hfclk_is_running() &&
-            nrfx_clock_lfclk_is_running()))
+             nrfx_clock_lfclk_is_running()))
     {
         /* Just waiting */
     }
@@ -54,7 +54,7 @@ static void init_power_clock(void)
  *
  * Forwards messages from IPC layer to Radio layer
  */
-void radio_tx_thread(void * p1, void * p2, void * p3)
+void radio_tx_thread(void *p1, void *p2, void *p3)
 {
     LOG_INF("USB to Radio thread started");
     k_msleep(500);
@@ -77,14 +77,13 @@ void radio_tx_thread(void * p1, void * p2, void * p3)
  *
  * Forwards messages from radio layer to IPC layer
  */
-void radio_rx_thread(void * p1, void * p2, void * p3)
+void radio_rx_thread(void *p1, void *p2, void *p3)
 {
     LOG_INF("Radio to USB thread started");
     k_msleep(500);
     uint8_t radio_rx[MAX_MESSAGE_SIZE];
     struct ipc_msg msg = {
-        .data = radio_rx
-    };
+        .data = radio_rx};
 
     while (true)
     {
@@ -138,7 +137,7 @@ void main(void)
                     0, K_NO_WAIT);
 
     LOG_INF("Mesh node on network core started.");
-    
+
     k_msleep(2000); // Allow logs time to flush
 }
 
@@ -149,7 +148,8 @@ void main(void)
  */
 void ipc_receive(struct ipc_msg msg)
 {
-    while (k_msgq_put(&ipc_rx_msgq, &msg, K_NO_WAIT) != 0) {
+    while (k_msgq_put(&ipc_rx_msgq, &msg, K_NO_WAIT) != 0)
+    {
         /* message queue is full: purge old data & try again */
         k_msgq_purge(&ipc_rx_msgq);
     }

@@ -21,19 +21,17 @@ void main(void)
     sprintf(data, "Hello world!");
     struct mesh_msg msg = {
         .data = data,
-        .len = 12
-    };
-    
+        .len = 12};
+
     k_msleep(2000); // Allow logs time to flush
 
-    while(1)
+    while (1)
     {
         // Send a message every two seconds
         k_msleep(2000);
         LOG_DBG("Sending mesh message. Length: %d", msg.len);
         mesh_send(msg);
     }
-
 }
 
 /**
