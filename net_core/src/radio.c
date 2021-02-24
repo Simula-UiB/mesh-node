@@ -1,13 +1,13 @@
 #include <common.h>
 #include <radio.h>
 
-#include <zephyr.h>
 #include <logging/log.h>
 #include <logging/log_ctrl.h>
+#include <zephyr.h>
 LOG_MODULE_REGISTER(radio, GLOBAL_LOG_LEVEL);
 
-#include <nrfx.h>
 #include <hal/nrf_radio.h>
+#include <nrfx.h>
 
 /* Radio buffer offsets */
 #define RF_BUFFER_LENGTH_OFFSET 0

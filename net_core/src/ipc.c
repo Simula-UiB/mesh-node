@@ -1,22 +1,22 @@
-#include <stdio.h>
-#include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
 
-#include <zephyr.h>
 #include <arch/cpu.h>
-#include <sys/byteorder.h>
-#include <logging/log.h>
 #include <drivers/ipm.h>
+#include <logging/log.h>
+#include <sys/byteorder.h>
+#include <zephyr.h>
 
-#include <sys/util.h>
 #include <logging/log.h>
 #include <logging/log_ctrl.h>
+#include <sys/util.h>
 
-#include <openamp/open_amp.h>
-#include <metal/sys.h>
-#include <metal/device.h>
 #include <metal/alloc.h>
+#include <metal/device.h>
+#include <metal/sys.h>
+#include <openamp/open_amp.h>
 
 #include <ipc/rpmsg_service.h>
 

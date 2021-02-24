@@ -1,12 +1,12 @@
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 
-#include <zephyr.h>
 #include <logging/log.h>
+#include <zephyr.h>
 
-#include <sys/util.h>
 #include <logging/log.h>
 #include <logging/log_ctrl.h>
+#include <sys/util.h>
 
 #include <common.h>
 #include <mesh.h>
