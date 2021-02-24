@@ -1,20 +1,20 @@
 #include <stdio.h>
 
-#include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
-#include <zephyr.h>
 #include <logging/log.h>
 #include <logging/log_ctrl.h>
+#include <zephyr.h>
 
 #include <nrfx.h>
 #include <nrfx_clock.h>
 #include <nrfx_power.h>
 
 #include <common.h>
-#include <radio.h>
 #include <ipc.h>
+#include <radio.h>
 
 LOG_MODULE_REGISTER(main, GLOBAL_LOG_LEVEL);
 
