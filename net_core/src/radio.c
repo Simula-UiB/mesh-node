@@ -77,7 +77,7 @@ int radio_send(uint8_t *data, uint8_t length)
  *
  * Forwards messages from radio layer
  */
-void radio_rx_thread(void * p1, void * p2, void * p3)
+void radio_rx_thread(void *p1, void *p2, void *p3)
 {
     k_msleep(500);
     uint8_t radio_rx[MAX_MESSAGE_SIZE];
@@ -86,7 +86,7 @@ void radio_rx_thread(void * p1, void * p2, void * p3)
     {
         /* Wait for received frame from radio */
         k_sem_take(&rf_rx_sem, K_FOREVER);
-        uint8_t length = rf_rx_buf[RF_BUFFER_LENGTH_OFFSET]-1;
+        uint8_t length = rf_rx_buf[RF_BUFFER_LENGTH_OFFSET] - 1;
         if (length > MAX_MESSAGE_SIZE)
         {
             length = MAX_MESSAGE_SIZE;
@@ -97,7 +97,6 @@ void radio_rx_thread(void * p1, void * p2, void * p3)
         radio_receive(radio_rx, length);
     }
 }
-
 
 /**
  * @brief Set packet pointer and trigger RXEN task
