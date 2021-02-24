@@ -21,9 +21,7 @@ LOG_MODULE_REGISTER(main, GLOBAL_LOG_LEVEL);
 #define THREAD_STACK_SIZE 2048
 #define THREAD_PRIORITY 5
 
-K_THREAD_STACK_DEFINE(radio_rx_stack_area, THREAD_STACK_SIZE);
 K_THREAD_STACK_DEFINE(radio_tx_stack_area, THREAD_STACK_SIZE);
-struct k_thread radio_rx_thread_data;
 struct k_thread radio_tx_thread_data;
 
 /* Define IPC message queues (ring buffer), with size 10 */
@@ -68,30 +66,6 @@ void radio_tx_thread(void *p1, void *p2, void *p3)
     }
 }
 
-/**
- * @brief Radio RX thread entrypoint
- *
- * Forwards messages from radio layer to IPC layer
- */
-void radio_rx_thread(void *p1, void *p2, void *p3)
-{
-    LOG_INF("Radio to USB thread started");
-    k_msleep(500);
-    uint8_t radio_rx[MAX_MESSAGE_SIZE];
-    struct ipc_msg msg = {
-        .data = radio_rx};
-
-    while (true)
-    {
-        /* Wait for received frame from radio */
-        LOG_DBG("Calling radio receive");
-        size_t len = radio_receive(radio_rx, MAX_MESSAGE_SIZE);
-        LOG_HEXDUMP_DBG(radio_rx, len, "Radio RX data");
-        /* Send received frame over IPC */
-        msg.len = len;
-        ipc_send(msg);
-    }
-}
 
 void main(void)
 {
@@ -103,15 +77,7 @@ void main(void)
     init_radio();
     LOG_INF("Radio initialized");
 
-    /* Spawn threads */
-    k_thread_create(&radio_rx_thread_data,
-                    radio_rx_stack_area,
-                    THREAD_STACK_SIZE,
-                    radio_rx_thread,
-                    NULL, NULL, NULL,
-                    THREAD_PRIORITY,
-                    0, K_NO_WAIT);
-
+    /* Spawn thread */
     k_thread_create(&radio_tx_thread_data,
                     radio_tx_stack_area,
                     THREAD_STACK_SIZE,
@@ -123,6 +89,19 @@ void main(void)
     LOG_INF("Mesh node on network core started.");
 
     k_msleep(2000); // Allow logs time to flush
+}
+
+/**
+ * @brief Callback for received radio frames
+ */
+void radio_receive(uint8_t *data, uint8_t length)
+{
+    struct ipc_msg msg = {
+        .data = data,
+        .len = length};
+
+    /* Data will be copied to a tx buffer before this returns, so no need for us to do that here */
+    ipc_send(msg);
 }
 
 /**

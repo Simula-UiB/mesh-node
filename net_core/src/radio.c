@@ -87,14 +87,14 @@ void radio_rx_thread(void * p1, void * p2, void * p3)
         /* Wait for received frame from radio */
         k_sem_take(&rf_rx_sem, K_FOREVER);
         uint8_t length = rf_rx_buf[RF_BUFFER_LENGTH_OFFSET]-1;
-        if (length > max_length)
+        if (length > MAX_MESSAGE_SIZE)
         {
-            length = max_length;
+            length = MAX_MESSAGE_SIZE;
         }
         memcpy(radio_rx, rf_rx_buf + RF_BUFFER_PAYLOAD_OFFSET, length);
-        LOG_HEXDUMP_DBG(radio_rx, len, "Radio RX data");
+        LOG_HEXDUMP_DBG(radio_rx, length, "Radio RX data");
         /* Callback function for received radio frame */
-        radio_receive(radio_rx, len);
+        radio_receive(radio_rx, length);
     }
 }
 
@@ -234,4 +234,4 @@ void init_radio()
 }
 
 /* Define and start radio rx thread */
-K_THREAD_DEFINE(radio_rx, THREAD_STACK_SIZE, radio_rx_thread, NULL, NULL, NULL, THREAD_PRIORITY, 0, K_NO_WAIT)
+K_THREAD_DEFINE(radio_rx, THREAD_STACK_SIZE, radio_rx_thread, NULL, NULL, NULL, THREAD_PRIORITY, 0, 0);
