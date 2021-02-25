@@ -4,7 +4,7 @@
 
 Follow the [Zephyr getting started guide](https://docs.zephyrproject.org/latest/getting_started/index.html), to get the `west` tool installed and to have a local copy of zephyr.
 
-Make sure zephyr is on the master branch or at least version >= 2.5.0.
+We use zephyr version 2.5.0. To select that version, do `git checkout v2.5.0` in the zephyr directory, and then `west update`.
 
 ### Compiling and flashing to nrf5340 Development Kit
 
