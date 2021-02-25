@@ -39,7 +39,7 @@ int rpmsg_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src,
     memcpy(msg_data, data, len);
 
     /* Call callback function with ipc message */
-    ipc_receive(msg);
+    ipc_receive_cb(msg);
 
     return RPMSG_SUCCESS;
 }

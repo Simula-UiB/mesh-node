@@ -14,6 +14,10 @@
 #include <zephyr.h>
 LOG_MODULE_REGISTER(node, GLOBAL_LOG_LEVEL);
 
+/* Thread definitions */
+#define THREAD_STACK_SIZE 2048
+#define THREAD_PRIORITY 5
+
 /* Queue of incoming messages waiting to be processed */
 K_MSGQ_DEFINE(node_msgq, sizeof(struct ipc_msg), 10, 4);
 
@@ -107,3 +111,5 @@ void init_node()
     }
     LOG_HEXDUMP_INF(node_addr, 6, "Node Address");
 }
+
+K_THREAD_DEFINE(node, THREAD_STACK_SIZE, node_thread, NULL, NULL, NULL, THREAD_PRIORITY, 0, 0);

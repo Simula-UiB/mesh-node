@@ -13,6 +13,10 @@ LOG_MODULE_REGISTER(radio, GLOBAL_LOG_LEVEL);
 #define RF_BUFFER_LENGTH_OFFSET 0
 #define RF_BUFFER_PAYLOAD_OFFSET 1
 
+/* Thread definitions */
+#define THREAD_STACK_SIZE 2048
+#define THREAD_PRIORITY 5
+
 /* Radio transmission buffer. +1 byte for length byte. */
 uint8_t rf_tx_buf[MAX_MESSAGE_SIZE + 1];
 /* Radio receive buffer */
@@ -68,17 +72,30 @@ int radio_send(uint8_t *data, uint8_t length)
     return ret;
 }
 
-int radio_receive(uint8_t *data, uint8_t max_length)
+/**
+ * @brief Radio RX thread
+ *
+ * Forwards messages from radio layer
+ */
+void radio_rx_thread(void *p1, void *p2, void *p3)
 {
-    LOG_DBG("Radio receive started");
-    k_sem_take(&rf_rx_sem, K_FOREVER);
-    uint8_t length = rf_rx_buf[RF_BUFFER_LENGTH_OFFSET] - 1;
-    if (length > max_length)
+    k_msleep(500);
+    uint8_t radio_rx[MAX_MESSAGE_SIZE];
+
+    while (true)
     {
-        length = max_length;
+        /* Wait for received frame from radio */
+        k_sem_take(&rf_rx_sem, K_FOREVER);
+        uint8_t length = rf_rx_buf[RF_BUFFER_LENGTH_OFFSET] - 1;
+        if (length > MAX_MESSAGE_SIZE)
+        {
+            length = MAX_MESSAGE_SIZE;
+        }
+        memcpy(radio_rx, rf_rx_buf + RF_BUFFER_PAYLOAD_OFFSET, length);
+        LOG_HEXDUMP_DBG(radio_rx, length, "Radio RX data");
+        /* Callback function for received radio frame */
+        radio_receive_cb(radio_rx, length);
     }
-    memcpy(data, rf_rx_buf + RF_BUFFER_PAYLOAD_OFFSET, length);
-    return length;
 }
 
 /**
@@ -214,3 +231,6 @@ void init_radio()
     /* Start rx */
     trigger_rx();
 }
+
+/* Define and start radio rx thread */
+K_THREAD_DEFINE(radio_rx, THREAD_STACK_SIZE, radio_rx_thread, NULL, NULL, NULL, THREAD_PRIORITY, 0, 0);

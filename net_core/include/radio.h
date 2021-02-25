@@ -11,6 +11,11 @@ void init_radio();
 int radio_send(uint8_t *data, uint8_t length);
 
 /**
- * @brief Receive data from radio
+ * @brief Radio receive callback function. 
+ * 
+ * @details This function must be implemented by the module making use of the radio. It will be called 
+ *      when the radio has received a frame. The data buffer may be overwritten at any time after this
+ *      function returns, so data should be copied to another buffer or processing should be completed
+ *      before returning.
  */
-int radio_receive(uint8_t *data, uint8_t max_length);
+void radio_receive_cb(uint8_t *data, uint8_t length);

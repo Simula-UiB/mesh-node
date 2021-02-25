@@ -21,19 +21,6 @@
 
 LOG_MODULE_REGISTER(main, GLOBAL_LOG_LEVEL);
 
-#define THREAD_STACK_SIZE 2048
-#define THREAD_PRIORITY 5
-
-K_THREAD_STACK_DEFINE(radio_rx_stack_area, THREAD_STACK_SIZE);
-K_THREAD_STACK_DEFINE(radio_tx_stack_area, THREAD_STACK_SIZE);
-K_THREAD_STACK_DEFINE(node_stack_area, THREAD_STACK_SIZE);
-struct k_thread radio_rx_thread_data;
-struct k_thread radio_tx_thread_data;
-struct k_thread node_thread_data;
-
-/* Define IPC message queues (ring buffer), with size 10 */
-K_MSGQ_DEFINE(ipc_rx_msgq, sizeof(struct ipc_msg), 10, 4);
-
 /**
  * @brief Initialize power and clock peripherals
  */
@@ -47,54 +34,6 @@ static void init_power_clock(void)
              nrfx_clock_lfclk_is_running()))
     {
         /* Just waiting */
-    }
-}
-
-/**
- * @brief Radio TX thread entrypoint
- *
- * Forwards messages from IPC layer to Radio layer
- */
-void radio_tx_thread(void *p1, void *p2, void *p3)
-{
-    LOG_INF("USB to Radio thread started");
-    k_msleep(500);
-
-    struct ipc_msg msg;
-
-    while (true)
-    {
-        k_msgq_get(&ipc_rx_msgq, &msg, K_FOREVER);
-        int ret = node_send(msg.data, msg.len);
-        if (ret != 0)
-        {
-            LOG_ERR("Node send failed with: %d", ret);
-        }
-    }
-}
-
-/**
- * @brief Radio RX thread entrypoint
- *
- * Forwards messages from radio layer to IPC layer
- */
-void radio_rx_thread(void *p1, void *p2, void *p3)
-{
-    LOG_INF("Radio to USB thread started");
-    k_msleep(500);
-    uint8_t radio_rx[MAX_MESSAGE_SIZE];
-    struct ipc_msg msg = {
-        .data = radio_rx};
-
-    while (true)
-    {
-        /* Wait for received frame from radio */
-        LOG_DBG("Calling radio receive");
-        size_t len = radio_receive(radio_rx, MAX_MESSAGE_SIZE);
-        LOG_HEXDUMP_DBG(radio_rx, len, "Radio RX data");
-        /* Enqueue message for processing */
-        msg.len = len;
-        node_enqueue(msg);
     }
 }
 
@@ -112,34 +51,22 @@ void main(void)
     init_node();
     LOG_INF("Node initialized");
 
-    /* Spawn threads */
-    k_thread_create(&radio_rx_thread_data,
-                    radio_rx_stack_area,
-                    THREAD_STACK_SIZE,
-                    radio_rx_thread,
-                    NULL, NULL, NULL,
-                    THREAD_PRIORITY,
-                    0, K_NO_WAIT);
-
-    k_thread_create(&radio_tx_thread_data,
-                    radio_tx_stack_area,
-                    THREAD_STACK_SIZE,
-                    radio_tx_thread,
-                    NULL, NULL, NULL,
-                    THREAD_PRIORITY,
-                    0, K_NO_WAIT);
-
-    k_thread_create(&node_thread_data,
-                    node_stack_area,
-                    THREAD_STACK_SIZE,
-                    node_thread,
-                    NULL, NULL, NULL,
-                    THREAD_PRIORITY,
-                    0, K_NO_WAIT);
-
     LOG_INF("Mesh node on network core started.");
 
     k_msleep(2000); // Allow logs time to flush
+}
+
+/**
+ * @brief Callback for received radio frames
+ */
+void radio_receive_cb(uint8_t *data, uint8_t length)
+{
+    struct ipc_msg msg = {
+        .data = data,
+        .len = length};
+
+    /* Data will be copied to a tx buffer before this returns, so no need for us to do that here */
+    node_enqueue(msg);
 }
 
 /**
@@ -147,12 +74,18 @@ void main(void)
  *
  * Forward messages to mesh network (currently directly to radio)
  */
-void ipc_receive(struct ipc_msg msg)
+void ipc_receive_cb(struct ipc_msg msg)
 {
-    while (k_msgq_put(&ipc_rx_msgq, &msg, K_NO_WAIT) != 0)
+    if (msg.len > MAX_MESSAGE_SIZE)
     {
-        /* message queue is full: purge old data & try again */
-        k_msgq_purge(&ipc_rx_msgq);
+        LOG_ERR("IPC message too large: %d", msg.len);
+        return;
+    }
+
+    int ret = node_send(msg.data, msg.len);
+    if (ret != 0)
+    {
+        LOG_ERR("Radio send failed with: %d", ret);
     }
 }
 
