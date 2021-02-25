@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8.2)
 
-set(BOARD nrf5340pdk_nrf5340_cpuapp)
+set(BOARD nrf5340dk_nrf5340_cpuapp)
 
 list(APPEND ZEPHYR_EXTRA_MODULES ${CMAKE_SOURCE_DIR}/../../mesh_access/)
 
