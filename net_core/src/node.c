@@ -2,9 +2,10 @@
 #include <stdio.h>
 
 #include <common.h>
+#include <msg.h>
+
 #include <hash.h>
 #include <ipc.h>
-#include <msg.h>
 #include <node.h>
 #include <radio.h>
 
