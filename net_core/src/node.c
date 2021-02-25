@@ -1,10 +1,12 @@
 #include <stdio.h>
+#include <stdint.h>
 
 #include <common.h>
 #include <msg.h>
 #include <node.h>
 #include <ipc.h>
 #include <radio.h>
+#include <hash.h>
 
 #include <zephyr.h>
 #include <logging/log.h>
@@ -13,16 +15,6 @@ LOG_MODULE_REGISTER(node, GLOBAL_LOG_LEVEL);
 
 /* Queue of incoming messages waiting to be processed */
 K_MSGQ_DEFINE(node_msgq, sizeof(struct ipc_msg), 10, 4);
-
-#define HEADER_LENGTH 22
-
-#define SRC_MAC_POS 0
-#define ORIGINAL_SRC_MAC_POS 6
-#define DST_MAC_POS 12
-#define MSG_NUMBER_POS 18
-#define HOP_COUNT_POS 20
-#define PAYLOAD_LENGTH_POS 21
-#define DATA_POS 22
 
 #define MAX_HOP_COUNT 10
 #define MAX_HASH_COUNT_LIMIT 100
@@ -67,6 +59,8 @@ void node_process_packet()
     {
         node_receive(msg);
     }
+
+    LOG_INF("%u", hash_packet(msg.data, msg.len));
 
     // TODO TTL or Hop Count?
     msg.data[HOP_COUNT_POS]++;
