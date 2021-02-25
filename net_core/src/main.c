@@ -59,13 +59,14 @@ void main(void)
 /**
  * @brief Callback for received radio frames
  */
-void radio_receive_cb(uint8_t *data, uint8_t length)
+void radio_receive_cb(uint8_t *data, uint8_t len)
 {
+    uint8_t msg_data[MAX_MESSAGE_SIZE];
     struct ipc_msg msg = {
-        .data = data,
-        .len = length};
+        .data = msg_data,
+        .len = len};
+    memcpy(msg_data, data, len);
 
-    /* Data will be copied to a tx buffer before this returns, so no need for us to do that here */
     node_enqueue(msg);
 }
 
@@ -89,11 +90,6 @@ void ipc_receive_cb(struct ipc_msg msg)
     }
 }
 
-/**
- * @brief Callback for received IPC messages
- *
- * Forward messages to mesh network (currently directly to radio)
- */
 void node_receive(struct ipc_msg msg)
 {
     LOG_HEXDUMP_DBG(msg.data, msg.len, "Node RX data");
