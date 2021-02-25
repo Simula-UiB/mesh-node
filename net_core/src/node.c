@@ -1,16 +1,16 @@
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include <common.h>
+#include <hash.h>
+#include <ipc.h>
 #include <msg.h>
 #include <node.h>
-#include <ipc.h>
 #include <radio.h>
-#include <hash.h>
 
-#include <zephyr.h>
 #include <logging/log.h>
 #include <logging/log_ctrl.h>
+#include <zephyr.h>
 LOG_MODULE_REGISTER(node, GLOBAL_LOG_LEVEL);
 
 /* Queue of incoming messages waiting to be processed */
@@ -43,7 +43,7 @@ void node_process_packet()
 {
     struct ipc_msg msg;
     k_msgq_get(&node_msgq, &msg, K_FOREVER);
-    if (msg.len < HEADER_LENGTH || msg.len > MAX_MESSAGE_SIZE || msg.data[HOP_COUNT_POS] > MAX_HOP_COUNT)
+    if (msg.len < HEADER_LENGTH || msg.len > MAX_MESSAGE_SIZE || msg.data[TTL_POS] <= 0)
     {
         LOG_DBG("Packet discarded");
         return;
@@ -62,8 +62,7 @@ void node_process_packet()
 
     LOG_INF("%u", hash_packet(msg.data, msg.len));
 
-    // TODO TTL or Hop Count?
-    msg.data[HOP_COUNT_POS]++;
+    msg.data[TTL_POS]--;
     memcpy(msg.data + SRC_MAC_POS, node_addr, 6);
 
     LOG_HEXDUMP_DBG(msg.data, msg.len, "Forwarding");
@@ -81,7 +80,7 @@ int node_send(uint8_t *data, uint8_t length)
     memcpy(node_send_buf + ORIGINAL_SRC_MAC_POS, node_addr, 6);
     memcpy(node_send_buf + DST_MAC_POS, node_dst_addr, 6);
     node_send_buf[MSG_NUMBER_POS] = msg_count++;
-    node_send_buf[HOP_COUNT_POS] = 0;
+    node_send_buf[TTL_POS] = MAX_HOP_COUNT;
     node_send_buf[PAYLOAD_LENGTH_POS] = length;
     memcpy(node_send_buf + DATA_POS, data, length);
 
