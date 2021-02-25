@@ -61,7 +61,7 @@ void node_process_packet()
         node_receive(msg);
     }
 
-    LOG_INF("%u", hash_packet(msg.data, msg.len));
+    LOG_INF("%u", hash_packet(msg));
 
     msg.data[TTL_POS]--;
     memcpy(msg.data + SRC_MAC_POS, node_addr, 6);
