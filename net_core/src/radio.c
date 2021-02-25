@@ -94,7 +94,7 @@ void radio_rx_thread(void *p1, void *p2, void *p3)
         memcpy(radio_rx, rf_rx_buf + RF_BUFFER_PAYLOAD_OFFSET, length);
         LOG_HEXDUMP_DBG(radio_rx, length, "Radio RX data");
         /* Callback function for received radio frame */
-        radio_receive(radio_rx, length);
+        radio_receive_cb(radio_rx, length);
     }
 }
 

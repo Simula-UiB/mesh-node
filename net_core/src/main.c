@@ -52,7 +52,7 @@ void main(void)
 /**
  * @brief Callback for received radio frames
  */
-void radio_receive(uint8_t *data, uint8_t length)
+void radio_receive_cb(uint8_t *data, uint8_t length)
 {
     struct ipc_msg msg = {
         .data = data,
@@ -67,7 +67,7 @@ void radio_receive(uint8_t *data, uint8_t length)
  *
  * Forward messages to mesh network (currently directly to radio)
  */
-void ipc_receive(struct ipc_msg msg)
+void ipc_receive_cb(struct ipc_msg msg)
 {
     if (msg.len > MAX_MESSAGE_SIZE)
     {
