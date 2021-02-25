@@ -13,8 +13,9 @@
 #include <nrfx_power.h>
 
 #include <common.h>
-#include <ipc.h>
 #include <msg.h>
+
+#include <ipc.h>
 #include <node.h>
 #include <radio.h>
 
