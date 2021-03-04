@@ -91,6 +91,7 @@ void hash_remove(uint32_t hash_val)
     if (buckets[bucket] != NULL && buckets[bucket]->data == hash_val)
     {
         buckets[bucket] = buckets[bucket]->next;
+        return;
     }
     for (struct node *x = buckets[bucket]; x->next != NULL; x = x->next)
     {
@@ -110,11 +111,9 @@ void hash_remove(uint32_t hash_val)
  */
 void hash_add(uint32_t hash_val)
 {
-    LOG_INF("hash_val=%u", hash_val);
     if (hash_size >= MAX_HASH_COUNT_LIMIT)
     {
         uint32_t old_hash = dequeue();
-        LOG_HEXDUMP_INF(queue, MAX_HASH_COUNT_LIMIT, "Queue:");
         hash_remove(old_hash);
     }
     enqueue(hash_val);
@@ -129,7 +128,6 @@ void hash_add(uint32_t hash_val)
     new_node->next = buckets[bucket];
     buckets[bucket] = new_node;
     hash_size++;
-    LOG_INF("hash_size=%u, queue_size=%u", hash_size, queue_size);
 }
 
 bool hash_contains(uint32_t hash_val)
@@ -144,5 +142,3 @@ bool hash_contains(uint32_t hash_val)
     }
     return false;
 }
-
-// TODO Something crashes somewhere, I don't know where yet...

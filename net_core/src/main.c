@@ -67,7 +67,7 @@ void radio_receive_cb(struct mesh_msg *msg)
 /**
  * @brief Callback for received IPC messages
  *
- * Forward messages to mesh network (currently directly to radio)
+ * Forward messages to mesh network
  */
 void ipc_receive_cb(struct mesh_msg *msg)
 {
