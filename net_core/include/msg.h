@@ -1,6 +1,3 @@
-#include <stdlib.h>
-#include <stdint.h>
-
 /**
  * @brief Mesh message struct
  */
