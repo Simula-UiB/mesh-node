@@ -7,6 +7,7 @@
 
 #include <common.h>
 #include <msg.h>
+
 #include <radio.h>
 
 LOG_MODULE_REGISTER(radio, GLOBAL_LOG_LEVEL);

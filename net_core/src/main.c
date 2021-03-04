@@ -13,8 +13,9 @@
 #include <nrfx_power.h>
 
 #include <common.h>
-#include <ipc.h>
 #include <msg.h>
+
+#include <ipc.h>
 #include <radio.h>
 
 LOG_MODULE_REGISTER(main, GLOBAL_LOG_LEVEL);

@@ -21,8 +21,9 @@
 #include <ipc/rpmsg_service.h>
 
 #include <common.h>
-#include <ipc.h>
 #include <msg.h>
+
+#include <ipc.h>
 
 LOG_MODULE_REGISTER(ipc, GLOBAL_LOG_LEVEL);
 
