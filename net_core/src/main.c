@@ -59,14 +59,8 @@ void main(void)
 /**
  * @brief Callback for received radio frames
  */
-void radio_receive_cb(uint8_t *data, uint8_t len)
+void radio_receive_cb(struct mesh_msg *msg)
 {
-    uint8_t msg_data[MAX_MESSAGE_SIZE];
-    struct ipc_msg msg = {
-        .data = msg_data,
-        .len = len};
-    memcpy(msg_data, data, len);
-
     node_enqueue(msg);
 }
 
@@ -75,23 +69,23 @@ void radio_receive_cb(uint8_t *data, uint8_t len)
  *
  * Forward messages to mesh network (currently directly to radio)
  */
-void ipc_receive_cb(struct ipc_msg msg)
+void ipc_receive_cb(struct mesh_msg *msg)
 {
-    if (msg.len > MAX_MESSAGE_SIZE)
+    if (msg->len > MAX_MESSAGE_SIZE)
     {
-        LOG_ERR("IPC message too large: %d", msg.len);
+        LOG_ERR("IPC message too large: %d", msg->len);
         return;
     }
 
-    int ret = node_send(msg.data, msg.len);
+    int ret = node_send(msg->data, msg->len);
     if (ret != 0)
     {
         LOG_ERR("Radio send failed with: %d", ret);
     }
 }
 
-void node_receive(struct ipc_msg msg)
+void node_receive(struct mesh_msg *msg)
 {
-    LOG_HEXDUMP_DBG(msg.data, msg.len, "Node RX data");
+    LOG_HEXDUMP_DBG(msg->data, msg->len, "Node RX data");
     ipc_send(msg);
 }

@@ -1,4 +1,4 @@
-uint32_t hash_packet(struct ipc_msg *msg);
+uint32_t hash_packet(struct mesh_msg *msg);
 
 void init_hash();
 

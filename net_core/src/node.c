@@ -19,7 +19,7 @@ LOG_MODULE_REGISTER(node, GLOBAL_LOG_LEVEL);
 #define THREAD_PRIORITY 5
 
 /* Queue of incoming messages waiting to be processed */
-K_MSGQ_DEFINE(node_msgq, sizeof(struct ipc_msg), 10, 4);
+K_MSGQ_DEFINE(node_msgq, sizeof(struct mesh_msg), 10, 4);
 
 #define MAX_HOP_COUNT 2
 
@@ -34,9 +34,9 @@ uint8_t node_dst_addr[6] = {0x84, 0xc8, 0xbd, 0xea, 0x64, 0x8a};
 
 uint8_t node_broadcast_addr[6] = {0, 0, 0, 0, 0, 0};
 
-void node_enqueue(struct ipc_msg msg)
+void node_enqueue(struct mesh_msg *msg)
 {
-    while (k_msgq_put(&node_msgq, &msg, K_NO_WAIT) != 0)
+    while (k_msgq_put(&node_msgq, msg, K_NO_WAIT) != 0)
     {
         /* message queue is full: purge old data & try again */
         k_msgq_purge(&node_msgq);
@@ -45,7 +45,7 @@ void node_enqueue(struct ipc_msg msg)
 
 void node_process_packet()
 {
-    struct ipc_msg msg;
+    struct mesh_msg msg;
     k_msgq_get(&node_msgq, &msg, K_FOREVER);
     if (msg.len < HEADER_LENGTH || msg.len > MAX_MESSAGE_SIZE)
     {
@@ -64,13 +64,13 @@ void node_process_packet()
 
     if (memcmp(msg.data + DST_MAC_POS, node_addr, 6) == 0)
     {
-        node_receive(msg);
+        node_receive(&msg);
         return;
     }
 
     if (memcmp(msg.data + DST_MAC_POS, node_broadcast_addr, 6) == 0)
     {
-        node_receive(msg);
+        node_receive(&msg);
     }
 
     msg.data[TTL_POS]--;

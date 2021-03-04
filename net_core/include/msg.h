@@ -1,10 +1,7 @@
-#include <stdlib.h>
-#include <stdint.h>
-
 /**
- * @brief IPC Message struct
+ * @brief Mesh message struct
  */
-struct ipc_msg
+struct mesh_msg
 {
     size_t len;
     uint8_t *data;

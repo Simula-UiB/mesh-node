@@ -55,7 +55,7 @@ uint32_t dequeue()
 }
 
 // Based on djb2
-uint32_t hash_packet(struct ipc_msg *msg)
+uint32_t hash_packet(struct mesh_msg *msg)
 {
     uint32_t hash = 5381;
 
