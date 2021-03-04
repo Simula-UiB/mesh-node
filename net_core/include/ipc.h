@@ -1,18 +1,14 @@
 /**
- * @brief IPC Message struct
- */
-struct ipc_msg
-{
-    size_t len;
-    uint8_t *data;
-};
-
-/**
  * @brief Send message to other core with IPC
  */
-int ipc_send(struct ipc_msg msg);
+int ipc_send(struct mesh_msg *msg);
 
 /**
  * @brief IPC receive callback
  */
-void ipc_receive_cb(struct ipc_msg msg);
+void ipc_receive_cb(struct mesh_msg *msg);
+
+/**
+ * @brief IPC init
+ */
+void ipc_init(struct k_heap *heap);

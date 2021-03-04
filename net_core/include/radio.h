@@ -18,4 +18,4 @@ int radio_send(uint8_t *data, uint8_t length);
  *      function returns, so data should be copied to another buffer or processing should be completed
  *      before returning.
  */
-void radio_receive_cb(uint8_t *data, uint8_t length);
+void radio_receive_cb(struct mesh_msg *msg);
