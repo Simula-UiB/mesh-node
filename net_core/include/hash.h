@@ -1,3 +1,7 @@
-uint32_t hash_djb2(uint8_t *bytes, size_t len);
+uint32_t hash_packet(struct ipc_msg *msg);
 
-uint32_t hash_packet(struct ipc_msg msg);
+void init_hash();
+
+void hash_add(uint32_t hash);
+
+bool hash_contains(uint32_t hash_val);

@@ -8,6 +8,8 @@
 #define PAYLOAD_LENGTH_POS 21
 #define DATA_POS 22
 
+#define MAX_HASH_COUNT_LIMIT 100
+
 /**
  * @brief Add a message to a queue so that it can be procecedd later.
  */

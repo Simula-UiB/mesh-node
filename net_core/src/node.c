@@ -21,8 +21,7 @@ LOG_MODULE_REGISTER(node, GLOBAL_LOG_LEVEL);
 /* Queue of incoming messages waiting to be processed */
 K_MSGQ_DEFINE(node_msgq, sizeof(struct ipc_msg), 10, 4);
 
-#define MAX_HOP_COUNT 10
-#define MAX_HASH_COUNT_LIMIT 100
+#define MAX_HOP_COUNT 2
 
 uint8_t msg_count = 0;
 
@@ -48,11 +47,20 @@ void node_process_packet()
 {
     struct ipc_msg msg;
     k_msgq_get(&node_msgq, &msg, K_FOREVER);
-    if (msg.len < HEADER_LENGTH || msg.len > MAX_MESSAGE_SIZE || msg.data[TTL_POS] <= 0)
+    if (msg.len < HEADER_LENGTH || msg.len > MAX_MESSAGE_SIZE)
     {
-        LOG_DBG("Packet discarded");
+        LOG_INF("Invalid packet");
         return;
     }
+
+    uint32_t hash = hash_packet(&msg);
+
+    if (msg.data[TTL_POS] <= 0 || hash_contains(hash))
+    {
+        return;
+    }
+
+    hash_add(hash);
 
     if (memcmp(msg.data + DST_MAC_POS, node_addr, 6) == 0)
     {
@@ -64,8 +72,6 @@ void node_process_packet()
     {
         node_receive(msg);
     }
-
-    LOG_INF("%u", hash_packet(msg));
 
     msg.data[TTL_POS]--;
     memcpy(msg.data + SRC_MAC_POS, node_addr, 6);
@@ -110,6 +116,8 @@ void init_node()
         node_addr[i] = NRF_FICR->DEVICEADDR[i / 4] >> ((i % 4) * 8);
     }
     LOG_HEXDUMP_INF(node_addr, 6, "Node Address");
+
+    init_hash();
 }
 
 K_THREAD_DEFINE(node, THREAD_STACK_SIZE, node_thread, NULL, NULL, NULL, THREAD_PRIORITY, 0, 0);
