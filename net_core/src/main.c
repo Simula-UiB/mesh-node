@@ -13,6 +13,8 @@
 #include <nrfx_power.h>
 
 #include <common.h>
+#include <msg.h>
+
 #include <ipc.h>
 #include <radio.h>
 
@@ -52,13 +54,8 @@ void main(void)
 /**
  * @brief Callback for received radio frames
  */
-void radio_receive_cb(uint8_t *data, uint8_t length)
+void radio_receive_cb(struct mesh_msg *msg)
 {
-    struct ipc_msg msg = {
-        .data = data,
-        .len = length};
-
-    /* Data will be copied to a tx buffer before this returns, so no need for us to do that here */
     ipc_send(msg);
 }
 
@@ -67,15 +64,15 @@ void radio_receive_cb(uint8_t *data, uint8_t length)
  *
  * Forward messages to mesh network (currently directly to radio)
  */
-void ipc_receive_cb(struct ipc_msg msg)
+void ipc_receive_cb(struct mesh_msg *msg)
 {
-    if (msg.len > MAX_MESSAGE_SIZE)
+    if (msg->len > MAX_MESSAGE_SIZE)
     {
-        LOG_ERR("IPC message too large: %d", msg.len);
+        LOG_ERR("IPC message too large: %d", msg->len);
         return;
     }
 
-    int ret = radio_send(msg.data, msg.len);
+    int ret = radio_send(msg->data, msg->len);
     if (ret != 0)
     {
         LOG_ERR("Radio send failed with: %d", ret);

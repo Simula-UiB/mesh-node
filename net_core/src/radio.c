@@ -1,13 +1,16 @@
-#include <common.h>
-#include <radio.h>
-
 #include <logging/log.h>
 #include <logging/log_ctrl.h>
 #include <zephyr.h>
-LOG_MODULE_REGISTER(radio, GLOBAL_LOG_LEVEL);
 
 #include <hal/nrf_radio.h>
 #include <nrfx.h>
+
+#include <common.h>
+#include <msg.h>
+
+#include <radio.h>
+
+LOG_MODULE_REGISTER(radio, GLOBAL_LOG_LEVEL);
 
 /* Radio buffer offsets */
 #define RF_BUFFER_LENGTH_OFFSET 0
@@ -16,6 +19,8 @@ LOG_MODULE_REGISTER(radio, GLOBAL_LOG_LEVEL);
 /* Thread definitions */
 #define THREAD_STACK_SIZE 2048
 #define THREAD_PRIORITY 5
+
+K_HEAP_DEFINE(radio_heap, (sizeof(struct mesh_msg) + MAX_MESSAGE_SIZE) * 10);
 
 /* Radio transmission buffer. +1 byte for length byte. */
 uint8_t rf_tx_buf[MAX_MESSAGE_SIZE + 1];
@@ -80,7 +85,7 @@ int radio_send(uint8_t *data, uint8_t length)
 void radio_rx_thread(void *p1, void *p2, void *p3)
 {
     k_msleep(500);
-    uint8_t radio_rx[MAX_MESSAGE_SIZE];
+    LOG_INF("Radio RX thread started, ID: %04x", (uint32_t)k_current_get());
 
     while (true)
     {
@@ -91,10 +96,29 @@ void radio_rx_thread(void *p1, void *p2, void *p3)
         {
             length = MAX_MESSAGE_SIZE;
         }
-        memcpy(radio_rx, rf_rx_buf + RF_BUFFER_PAYLOAD_OFFSET, length);
-        LOG_HEXDUMP_DBG(radio_rx, length, "Radio RX data");
+        struct mesh_msg *msg = (struct mesh_msg *)k_heap_alloc(&radio_heap, sizeof(struct mesh_msg), K_NO_WAIT);
+        if (msg == NULL)
+        {
+            LOG_ERR("Cannot allocate heap memory");
+            continue;
+        }
+        msg->data = (uint8_t *)k_heap_alloc(&radio_heap, length, K_NO_WAIT);
+        if (msg->data == NULL)
+        {
+            LOG_ERR("Cannot allocate heap memory");
+            k_heap_free(&radio_heap, msg);
+            continue;
+        }
+        msg->len = length;
+        memcpy(msg->data, rf_rx_buf + RF_BUFFER_PAYLOAD_OFFSET, length);
+
+        LOG_HEXDUMP_DBG(msg->data, length, "Radio RX data");
+
         /* Callback function for received radio frame */
-        radio_receive_cb(radio_rx, length);
+        radio_receive_cb(msg);
+
+        k_heap_free(&radio_heap, msg->data);
+        k_heap_free(&radio_heap, msg);
     }
 }
 
@@ -134,11 +158,6 @@ void radio_irq_handler(void *ctx)
             k_sem_give(&rf_rx_sem);
             /* Start new RX, we are already ramped up */
             nrf_radio_task_trigger(NRF_RADIO, NRF_RADIO_TASK_START);
-#if LOG_COUNTERS_ENABLED
-            rf_rx_count++;
-            if (rf_rx_count % 25 == 0)
-                log_counters();
-#endif
         }
         else if (NRF_RADIO_STATE_TXIDLE == state)
         {
@@ -147,11 +166,6 @@ void radio_irq_handler(void *ctx)
             trigger_rx();
             /* Give radio tx semaphore */
             k_sem_give(&rf_tx_completed);
-#if LOG_COUNTERS_ENABLED
-            rf_tx_count++;
-            if (rf_tx_count % 25 == 0)
-                log_counters();
-#endif
         }
         else
         {
