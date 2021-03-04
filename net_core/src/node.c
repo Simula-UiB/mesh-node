@@ -29,6 +29,7 @@ uint8_t node_send_buf[MAX_MESSAGE_SIZE + HEADER_LENGTH];
 
 uint8_t node_addr[6];
 
+// TODO Find a better way to handle destination MACs
 //uint8_t node_dst_addr[6] = {0xe2, 0xbb, 0x82, 0x7f, 0x52, 0x8f}; /* 960180795 */
 //uint8_t node_dst_addr[6] = {0xbf, 0x2b, 0xca, 0x94, 0xcc, 0x30}; /* 960150638 */
 uint8_t node_dst_addr[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
@@ -66,7 +67,7 @@ void node_process_packet()
     k_msgq_get(&node_msgq, &msg, K_FOREVER);
     if (msg->len < HEADER_LENGTH || msg->len > MAX_MESSAGE_SIZE)
     {
-        LOG_INF("Invalid packet");
+        LOG_DBG("Invalid packet");
         k_heap_free(&node_heap, msg->data);
         k_heap_free(&node_heap, msg);
         return;

@@ -54,7 +54,7 @@ uint32_t dequeue()
     return hash_val;
 }
 
-// Based on djb2
+/* Based on djb2 */
 uint32_t hash_packet(struct mesh_msg *msg)
 {
     uint32_t hash = 5381;
@@ -88,7 +88,10 @@ void init_hash()
 void hash_remove(uint32_t hash_val)
 {
     uint32_t bucket = hash_val % BUCKETS;
-    if (buckets[bucket] != NULL && buckets[bucket]->data == hash_val)
+    if (buckets[bucket] != NULL)
+        return;
+
+    if (buckets[bucket]->data == hash_val)
     {
         buckets[bucket] = buckets[bucket]->next;
         return;
