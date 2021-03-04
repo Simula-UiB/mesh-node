@@ -10,7 +10,7 @@
 #include <zephyr.h>
 LOG_MODULE_REGISTER(hash, GLOBAL_LOG_LEVEL);
 
-#define BUCKETS (MAX_HASH_COUNT_LIMIT / 2)
+#define NUM_BUCKETS (MAX_HASH_COUNT_LIMIT / 2)
 
 struct node
 {
@@ -18,7 +18,7 @@ struct node
     struct node *next;
 };
 
-struct node *buckets[BUCKETS];
+struct node *buckets[NUM_BUCKETS];
 size_t hash_size = 0;
 
 // TODO Find out why this is too small without the constant.
@@ -79,7 +79,7 @@ uint32_t hash_packet(struct mesh_msg *msg)
 
 void init_hash()
 {
-    for (size_t i = 0; i < BUCKETS; i++)
+    for (size_t i = 0; i < NUM_BUCKETS; i++)
     {
         buckets[i] = NULL;
     }
@@ -87,8 +87,8 @@ void init_hash()
 
 void hash_remove(uint32_t hash_val)
 {
-    uint32_t bucket = hash_val % BUCKETS;
-    if (buckets[bucket] != NULL)
+    uint32_t bucket = hash_val % NUM_BUCKETS;
+    if (buckets[bucket] == NULL)
         return;
 
     if (buckets[bucket]->data == hash_val)
@@ -120,11 +120,12 @@ void hash_add(uint32_t hash_val)
         hash_remove(old_hash);
     }
     enqueue(hash_val);
-    uint32_t bucket = hash_val % BUCKETS;
+    uint32_t bucket = hash_val % NUM_BUCKETS;
     void *ptr = k_heap_alloc(&hash_heap, sizeof(struct node), K_NO_WAIT);
     if (ptr == NULL)
     {
         LOG_ERR("Failed to allocate memory in heap.");
+        return;
     }
     struct node *new_node = (struct node *)ptr;
     new_node->data = hash_val;
@@ -135,7 +136,7 @@ void hash_add(uint32_t hash_val)
 
 bool hash_contains(uint32_t hash_val)
 {
-    uint32_t bucket = hash_val % BUCKETS;
+    uint32_t bucket = hash_val % NUM_BUCKETS;
     for (struct node *x = buckets[bucket]; x != NULL; x = x->next)
     {
         if (x->data == hash_val)

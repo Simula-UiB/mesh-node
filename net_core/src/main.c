@@ -80,7 +80,7 @@ void ipc_receive_cb(struct mesh_msg *msg)
     int ret = node_send(msg->data, msg->len);
     if (ret != 0)
     {
-        LOG_ERR("Radio send failed with: %d", ret);
+        LOG_ERR("Node send failed with: %d", ret);
     }
 }
 

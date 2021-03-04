@@ -25,7 +25,7 @@ K_MSGQ_DEFINE(node_msgq, sizeof(struct mesh_msg), 10, 4);
 
 uint8_t msg_count = 0;
 
-uint8_t node_send_buf[MAX_MESSAGE_SIZE + HEADER_LENGTH];
+uint8_t node_send_buf[MAX_MESSAGE_SIZE];
 
 uint8_t node_addr[6];
 
@@ -75,7 +75,7 @@ void node_process_packet()
 
     uint32_t hash = hash_packet(msg);
 
-    if (msg->data[TTL_POS] <= 0 || hash_contains(hash))
+    if (hash_contains(hash))
     {
         k_heap_free(&node_heap, msg->data);
         k_heap_free(&node_heap, msg);
@@ -97,6 +97,13 @@ void node_process_packet()
         node_receive(msg);
     }
 
+    if (msg->data[TTL_POS] <= 0)
+    {
+        k_heap_free(&node_heap, msg->data);
+        k_heap_free(&node_heap, msg);
+        return;
+    }
+
     msg->data[TTL_POS]--;
     memcpy(msg->data + SRC_MAC_POS, node_addr, 6);
 
@@ -108,8 +115,7 @@ void node_process_packet()
 
 int node_send(uint8_t *data, uint8_t length)
 {
-    // TODO max message size vs max payload size
-    if (length > MAX_MESSAGE_SIZE + HEADER_LENGTH)
+    if (length + HEADER_LENGTH > MAX_MESSAGE_SIZE)
     {
         return -1;
     }
