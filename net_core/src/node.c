@@ -100,7 +100,7 @@ int node_send(uint8_t *data, uint8_t length)
 
 void node_thread(void *p1, void *p2, void *p3)
 {
-    LOG_INF("Node thread started");
+    LOG_INF("Node thread started with id %04x", (uint32_t)k_current_get());
     k_msleep(500);
 
     while (true)
