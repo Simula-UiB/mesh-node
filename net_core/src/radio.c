@@ -19,7 +19,7 @@ LOG_MODULE_REGISTER(radio, GLOBAL_LOG_LEVEL);
 #define THREAD_STACK_SIZE 2048
 #define THREAD_PRIORITY 5
 
-K_HEAP_DEFINE(radio_heap, (sizeof(struct mesh_msg)+MAX_MESSAGE_SIZE)*10);
+K_HEAP_DEFINE(radio_heap, (sizeof(struct mesh_msg) + MAX_MESSAGE_SIZE) * 10);
 
 /* Radio transmission buffer. +1 byte for length byte. */
 uint8_t rf_tx_buf[MAX_MESSAGE_SIZE + 1];
@@ -95,13 +95,13 @@ void radio_rx_thread(void *p1, void *p2, void *p3)
         {
             length = MAX_MESSAGE_SIZE;
         }
-        struct mesh_msg *msg = (struct mesh_msg*) k_heap_alloc(&radio_heap, sizeof(struct mesh_msg), K_NO_WAIT);
+        struct mesh_msg *msg = (struct mesh_msg *)k_heap_alloc(&radio_heap, sizeof(struct mesh_msg), K_NO_WAIT);
         if (msg == NULL)
         {
             LOG_ERR("Cannot allocate heap memory");
             continue;
         }
-        msg->data = (uint8_t*) k_heap_alloc(&radio_heap, length, K_NO_WAIT);
+        msg->data = (uint8_t *)k_heap_alloc(&radio_heap, length, K_NO_WAIT);
         if (msg->data == NULL)
         {
             LOG_ERR("Cannot allocate heap memory");

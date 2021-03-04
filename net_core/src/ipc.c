@@ -21,12 +21,12 @@
 #include <ipc/rpmsg_service.h>
 
 #include <common.h>
-#include <msg.h>
 #include <ipc.h>
+#include <msg.h>
 
 LOG_MODULE_REGISTER(ipc, GLOBAL_LOG_LEVEL);
 
-K_HEAP_DEFINE(ipc_heap, (sizeof(struct mesh_msg)+MAX_MESSAGE_SIZE)*10);
+K_HEAP_DEFINE(ipc_heap, (sizeof(struct mesh_msg) + MAX_MESSAGE_SIZE) * 10);
 
 static int endpoint_id;
 
@@ -34,13 +34,13 @@ int rpmsg_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src,
              void *priv)
 {
     /* Fill IPC message struct */
-    struct mesh_msg *msg = (struct mesh_msg*) k_heap_alloc(&ipc_heap, sizeof(struct mesh_msg), K_NO_WAIT);
+    struct mesh_msg *msg = (struct mesh_msg *)k_heap_alloc(&ipc_heap, sizeof(struct mesh_msg), K_NO_WAIT);
     if (msg == NULL)
     {
         LOG_ERR("Cannot allocate heap memory");
         return RPMSG_ERR_NO_MEM;
     }
-    msg->data = (uint8_t*) k_heap_alloc(&ipc_heap, len, K_NO_WAIT);
+    msg->data = (uint8_t *)k_heap_alloc(&ipc_heap, len, K_NO_WAIT);
     if (msg->data == NULL)
     {
         LOG_ERR("Cannot allocate heap memory");
