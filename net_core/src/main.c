@@ -16,6 +16,7 @@
 #include <msg.h>
 
 #include <ipc.h>
+#include <node.h>
 #include <radio.h>
 
 LOG_MODULE_REGISTER(main, GLOBAL_LOG_LEVEL);
@@ -46,6 +47,10 @@ void main(void)
     init_radio();
     LOG_INF("Radio initialized");
 
+    /* Radio init */
+    init_node();
+    LOG_INF("Node initialized");
+
     LOG_INF("Mesh node on network core started.");
 
     k_msleep(2000); // Allow logs time to flush
@@ -56,13 +61,13 @@ void main(void)
  */
 void radio_receive_cb(struct mesh_msg *msg)
 {
-    ipc_send(msg);
+    node_enqueue(msg);
 }
 
 /**
  * @brief Callback for received IPC messages
  *
- * Forward messages to mesh network (currently directly to radio)
+ * Forward messages to mesh network
  */
 void ipc_receive_cb(struct mesh_msg *msg)
 {
@@ -72,9 +77,15 @@ void ipc_receive_cb(struct mesh_msg *msg)
         return;
     }
 
-    int ret = radio_send(msg->data, msg->len);
+    int ret = node_send(msg->data, msg->len);
     if (ret != 0)
     {
-        LOG_ERR("Radio send failed with: %d", ret);
+        LOG_ERR("Node send failed with: %d", ret);
     }
+}
+
+void node_receive(struct mesh_msg *msg)
+{
+    LOG_HEXDUMP_DBG(msg->data, msg->len, "Node RX data");
+    ipc_send(msg);
 }
