@@ -13,17 +13,17 @@
 /**
  * @brief Add a message to a queue so that it can be procecedd later.
  */
-void node_enqueue(struct mesh_msg *msg);
+void node_enqueue(uint8_t *data, uint8_t length);
 
 /**
  * @brief Send a messsage over the radio with an added header.
  */
-int node_send(uint8_t *data, uint8_t length);
+int node_send(struct message *msg);
 
 /**
  * @brief Node receive callback.
  */
-void node_receive(struct mesh_msg *msg);
+void node_receive(struct message *msg);
 
 /**
  * @brief Node processing thread.

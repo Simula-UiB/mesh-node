@@ -96,29 +96,20 @@ void radio_rx_thread(void *p1, void *p2, void *p3)
         {
             length = MAX_MESSAGE_SIZE;
         }
-        struct mesh_msg *msg = (struct mesh_msg *)k_heap_alloc(&radio_heap, sizeof(struct mesh_msg), K_NO_WAIT);
-        if (msg == NULL)
+        uint8_t *data = (uint8_t *)k_heap_alloc(&radio_heap, length, K_NO_WAIT);
+        if (data == NULL)
         {
             LOG_ERR("Cannot allocate heap memory");
             continue;
         }
-        msg->data = (uint8_t *)k_heap_alloc(&radio_heap, length, K_NO_WAIT);
-        if (msg->data == NULL)
-        {
-            LOG_ERR("Cannot allocate heap memory");
-            k_heap_free(&radio_heap, msg);
-            continue;
-        }
-        msg->len = length;
-        memcpy(msg->data, rf_rx_buf + RF_BUFFER_PAYLOAD_OFFSET, length);
+        memcpy(data, rf_rx_buf + RF_BUFFER_PAYLOAD_OFFSET, length);
 
-        LOG_HEXDUMP_DBG(msg->data, length, "Radio RX data");
+        LOG_HEXDUMP_DBG(data, length, "Radio RX data");
 
         /* Callback function for received radio frame */
-        radio_receive_cb(msg);
+        radio_receive_cb(data, length);
 
-        k_heap_free(&radio_heap, msg->data);
-        k_heap_free(&radio_heap, msg);
+        k_heap_free(&radio_heap, data);
     }
 }
 

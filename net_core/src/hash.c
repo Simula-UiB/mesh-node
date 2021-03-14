@@ -55,23 +55,23 @@ uint32_t dequeue()
 }
 
 /* Based on djb2 */
-uint32_t hash_packet(struct mesh_msg *msg)
+uint32_t hash_packet(struct message *msg)
 {
     uint32_t hash = 5381;
 
     for (size_t i = 0; i < 6; i++)
     {
-        hash += (hash << 5) + msg->data[ORIGINAL_SRC_MAC_POS + i];
+        hash += (hash << 5) + msg->src_mac[i];
     }
     for (size_t i = 0; i < 6; i++)
     {
-        hash += (hash << 5) + msg->data[DST_MAC_POS + i];
+        hash += (hash << 5) + msg->dst_mac[i];
     }
-    hash += (hash << 5) + msg->data[MSG_NUMBER_POS];
-    hash += (hash << 5) + msg->data[PAYLOAD_LENGTH_POS];
-    for (size_t i = DATA_POS; i < msg->len; i++)
+    hash += (hash << 5) + msg->msg_number;
+    hash += (hash << 5) + msg->payload_len;
+    for (size_t i = 0; i < msg->payload_len; i++)
     {
-        hash += (hash << 5) + msg->data[i];
+        hash += (hash << 5) + msg->payload[i];
     }
 
     return hash;
@@ -114,7 +114,7 @@ void hash_remove(uint32_t hash_val)
  */
 void hash_add(uint32_t hash_val)
 {
-    if (hash_size >= MAX_HASH_COUNT_LIMIT)
+    while (hash_size >= MAX_HASH_COUNT_LIMIT)
     {
         uint32_t old_hash = dequeue();
         hash_remove(old_hash);

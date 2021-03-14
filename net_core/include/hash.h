@@ -5,7 +5,7 @@
  *          hash. This allows the same original packet to have the same hash
  *          even when the source MAC and TTl has changed.
  */
-uint32_t hash_packet(struct mesh_msg *msg);
+uint32_t hash_packet(struct message *msg);
 
 /**
  * @brief Initialize hash
