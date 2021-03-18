@@ -12,6 +12,9 @@
 
 LOG_MODULE_REGISTER(radio, GLOBAL_LOG_LEVEL);
 
+/* Radio TX power */
+#define TX_POWER NRF_RADIO_TXPOWER_NEG40DBM
+
 /* Radio buffer offsets */
 #define RF_BUFFER_LENGTH_OFFSET 0
 #define RF_BUFFER_PAYLOAD_OFFSET 1
@@ -206,7 +209,7 @@ void init_radio()
     nrf_radio_frequency_set(NRF_RADIO, 2442); // 2442 Mhz
 
     /* Set radio transmission power */
-    nrf_radio_txpower_set(NRF_RADIO, NRF_RADIO_TXPOWER_0DBM); // 0 dBm
+    nrf_radio_txpower_set(NRF_RADIO, TX_POWER);
 
     /* Set packet config */
     nrf_radio_packet_conf_t pkt_conf = {
