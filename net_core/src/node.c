@@ -41,7 +41,6 @@ K_HEAP_DEFINE(node_heap, (sizeof(struct message) + MAX_MESSAGE_SIZE) * 10);
 
 void node_enqueue(uint8_t *data, uint8_t length)
 {
-    LOG_DBG("node_enqueue()");
     if (length < HEADER_LENGTH ||
         length > MAX_MESSAGE_SIZE ||
         length != data[PAYLOAD_LENGTH_POS] + HEADER_LENGTH)
@@ -55,11 +54,9 @@ void node_enqueue(uint8_t *data, uint8_t length)
         LOG_ERR("Cannot allocate heap memory");
         return;
     }
-    LOG_DBG("node_enqueue() Finished alloc");
     memcpy(msg->src_mac, data + SRC_MAC_POS, 6);
     memcpy(msg->original_src_mac, data + ORIGINAL_SRC_MAC_POS, 6);
     memcpy(msg->dst_mac, data + DST_MAC_POS, 6);
-    LOG_DBG("node_enqueue() Finished memcpy");
     msg->msg_number = data[MSG_NUMBER_POS];
     msg->ttl = data[TTL_POS];
     msg->payload_len = data[PAYLOAD_LENGTH_POS];
@@ -70,19 +67,16 @@ void node_enqueue(uint8_t *data, uint8_t length)
         k_heap_free(&node_heap, msg);
         return;
     }
-    LOG_DBG("node_enqueue() Finished second alloc");
     memcpy(msg->payload, data + DATA_POS, msg->payload_len);
     while (k_msgq_put(&node_msgq, &msg, K_NO_WAIT) != 0)
     {
         /* message queue is full: purge old data & try again */
         k_msgq_purge(&node_msgq);
     }
-    LOG_DBG("node_enqueue() Finished");
 }
 
 int node_radio_send(struct message *msg)
 {
-    LOG_DBG("node_radio_send()");
     memcpy(node_send_buf + SRC_MAC_POS, msg->src_mac, 6);
     memcpy(node_send_buf + ORIGINAL_SRC_MAC_POS, msg->original_src_mac, 6);
     memcpy(node_send_buf + DST_MAC_POS, msg->dst_mac, 6);
@@ -95,7 +89,6 @@ int node_radio_send(struct message *msg)
 
 void node_process_packet()
 {
-    LOG_DBG("node_process_packet()");
     struct message *msg;
     k_msgq_get(&node_msgq, &msg, K_FOREVER);
 
@@ -135,13 +128,15 @@ void node_process_packet()
 
     LOG_HEXDUMP_DBG(msg->payload, msg->payload_len, "Forwarding");
     node_radio_send(msg);
+    LOG_DBG("Finished send");
     k_heap_free(&node_heap, msg->payload);
+    LOG_DBG("Freed payload");
     k_heap_free(&node_heap, msg);
+    LOG_DBG("Freed struct");
 }
 
 int node_send(struct message *msg)
 {
-    LOG_DBG("node_send()");
     if (msg->payload_len + HEADER_LENGTH > MAX_MESSAGE_SIZE)
     {
         return -1;
@@ -163,6 +158,9 @@ void node_thread(void *p1, void *p2, void *p3)
     while (true)
     {
         node_process_packet();
+        printk("finished processing packet");
+        k_msleep(100);
+        LOG_DBG("Finished processing packet");
     }
 }
 

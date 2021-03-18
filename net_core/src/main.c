@@ -59,7 +59,7 @@ void main(void)
 /**
  * @brief Callback for received radio frames
  */
-void radio_receive_cb(uint8_t *data, uint8_t length)
+void radio_receive_cb(uint8_t *data, size_t length)
 {
     node_enqueue(data, length);
 }

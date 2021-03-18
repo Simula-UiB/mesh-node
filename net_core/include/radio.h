@@ -6,7 +6,7 @@ void init_radio();
 /**
  * @brief Start radio transmission
  */
-int radio_send(uint8_t *data, uint8_t length);
+int radio_send(uint8_t *data, size_t length);
 
 /**
  * @brief Radio receive callback function. 
@@ -16,4 +16,4 @@ int radio_send(uint8_t *data, uint8_t length);
  *      function returns, so data should be copied to another buffer or processing should be completed
  *      before returning.
  */
-void radio_receive_cb(uint8_t *data, uint8_t length);
+void radio_receive_cb(uint8_t *data, size_t length);

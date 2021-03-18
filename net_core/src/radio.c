@@ -39,7 +39,7 @@ void trigger_tx();
 /**
  * @brief Start radio transmission
  */
-int radio_send(uint8_t *data, uint8_t length)
+int radio_send(uint8_t *data, size_t length)
 {
     int ret = 0;
     /* Fill radio transmission buffer */
@@ -74,6 +74,7 @@ int radio_send(uint8_t *data, uint8_t length)
         ret = -EIO;
     }
     k_sem_take(&rf_tx_completed, K_FOREVER);
+    LOG_DBG("Finished TX");
     return ret;
 }
 
@@ -164,6 +165,7 @@ void radio_irq_handler(void *ctx)
             LOG_ERR("Unknown radio state in IRQ: %d", state);
         }
     }
+    LOG_DBG("Radio IRQ finished");
 }
 
 /**
