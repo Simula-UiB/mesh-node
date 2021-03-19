@@ -19,7 +19,7 @@ LOG_MODULE_REGISTER(node, GLOBAL_LOG_LEVEL);
 #define THREAD_PRIORITY 5
 
 /* Queue of incoming messages waiting to be processed */
-K_MSGQ_DEFINE(node_msgq, sizeof(struct message), 10, 4);
+K_MSGQ_DEFINE(node_msgq, sizeof(struct message *), 10, 4);
 
 #define MAX_HOP_COUNT 2
 
@@ -130,11 +130,8 @@ void node_process_packet()
 
     LOG_HEXDUMP_DBG(msg->payload, msg->payload_len, "Forwarding");
     node_radio_send(msg);
-    LOG_DBG("Finished send");
     k_heap_free(&node_heap, msg->payload);
-    LOG_DBG("Freed payload");
     k_heap_free(&node_heap, msg);
-    LOG_DBG("Freed struct");
 }
 
 int node_send(struct message *msg)
@@ -160,15 +157,11 @@ void node_thread(void *p1, void *p2, void *p3)
     while (true)
     {
         node_process_packet();
-        printk("finished processing packet");
-        k_msleep(100);
-        LOG_DBG("Finished processing packet");
     }
 }
 
 void init_node()
 {
-    LOG_DBG("init_node()");
     for (size_t i = 0; i < 6; i++)
     {
         node_addr[i] = NRF_FICR->DEVICEADDR[i / 4] >> ((i % 4) * 8);
