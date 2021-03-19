@@ -71,7 +71,7 @@ void radio_receive_cb(uint8_t *data, size_t length)
  */
 void ipc_receive_cb(struct message *msg)
 {
-    if (msg->payload_len > MAX_MESSAGE_SIZE + HEADER_LENGTH)
+    if (msg->payload_len + HEADER_LENGTH > MAX_MESSAGE_SIZE)
     {
         LOG_ERR("IPC message too large: %d", msg->payload_len);
         return;
