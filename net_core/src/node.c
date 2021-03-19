@@ -40,7 +40,7 @@ uint8_t node_broadcast_addr[6] = {0, 0, 0, 0, 0, 0};
 
 K_HEAP_DEFINE(node_heap, (sizeof(struct message) + MAX_MESSAGE_SIZE) * 10);
 
-void node_enqueue(uint8_t *data, uint8_t length)
+void node_enqueue(uint8_t *data, size_t length)
 {
     if (length < HEADER_LENGTH ||
         length > MAX_MESSAGE_SIZE ||
@@ -55,9 +55,9 @@ void node_enqueue(uint8_t *data, uint8_t length)
         LOG_ERR("Cannot allocate heap memory");
         return;
     }
-    memcpy(msg->src_mac, data + SRC_MAC_POS, 6);
-    memcpy(msg->original_src_mac, data + ORIGINAL_SRC_MAC_POS, 6);
-    memcpy(msg->dst_mac, data + DST_MAC_POS, 6);
+    memcpy(msg->src_mac, data + SRC_MAC_POS, sizeof(uint8_t) * 6);
+    memcpy(msg->original_src_mac, data + ORIGINAL_SRC_MAC_POS, sizeof(uint8_t) * 6);
+    memcpy(msg->dst_mac, data + DST_MAC_POS, sizeof(uint8_t) * 6);
     msg->msg_number = data[MSG_NUMBER_POS];
     msg->ttl = data[TTL_POS];
     msg->payload_len = data[PAYLOAD_LENGTH_POS];
@@ -78,9 +78,9 @@ void node_enqueue(uint8_t *data, uint8_t length)
 
 int node_radio_send(struct message *msg)
 {
-    memcpy(node_send_buf + SRC_MAC_POS, msg->src_mac, 6);
-    memcpy(node_send_buf + ORIGINAL_SRC_MAC_POS, msg->original_src_mac, 6);
-    memcpy(node_send_buf + DST_MAC_POS, msg->dst_mac, 6);
+    memcpy(node_send_buf + SRC_MAC_POS, msg->src_mac, sizeof(uint8_t) * 6);
+    memcpy(node_send_buf + ORIGINAL_SRC_MAC_POS, msg->original_src_mac, sizeof(uint8_t) * 6);
+    memcpy(node_send_buf + DST_MAC_POS, msg->dst_mac, sizeof(uint8_t) * 6);
     node_send_buf[MSG_NUMBER_POS] = msg->msg_number;
     node_send_buf[TTL_POS] = msg->ttl;
     node_send_buf[PAYLOAD_LENGTH_POS] = msg->payload_len;
@@ -104,7 +104,7 @@ void node_process_packet()
 
     hash_add(hash);
 
-    if (memcmp(msg->dst_mac, node_addr, 6) == 0)
+    if (memcmp(msg->dst_mac, node_addr, sizeof(uint8_t) * 6) == 0)
     {
         node_receive(msg);
         k_heap_free(&node_heap, msg->payload);
@@ -112,8 +112,8 @@ void node_process_packet()
         return;
     }
 
-    if (memcmp(msg->dst_mac, node_broadcast_addr, 6) == 0 &&
-        memcmp(msg->original_src_mac, node_addr, 6) != 0)
+    if (memcmp(msg->dst_mac, node_broadcast_addr, sizeof(uint8_t) * 6) == 0 &&
+        memcmp(msg->original_src_mac, node_addr, sizeof(uint8_t) * 6) != 0)
     {
         node_receive(msg);
     }
@@ -126,7 +126,7 @@ void node_process_packet()
     }
 
     msg->ttl--;
-    memcpy(msg->src_mac, node_addr, 6);
+    memcpy(msg->src_mac, node_addr, sizeof(uint8_t) * 6);
 
     LOG_HEXDUMP_DBG(msg->payload, msg->payload_len, "Forwarding");
     node_radio_send(msg);
@@ -143,9 +143,9 @@ int node_send(struct message *msg)
     {
         return -1;
     }
-    memcpy(msg->src_mac, node_addr, 6);
-    memcpy(msg->original_src_mac, node_addr, 6);
-    memcpy(msg->dst_mac, node_dst_addr, 6);
+    memcpy(msg->src_mac, node_addr, sizeof(uint8_t) * 6);
+    memcpy(msg->original_src_mac, node_addr, sizeof(uint8_t) * 6);
+    memcpy(msg->dst_mac, node_dst_addr, sizeof(uint8_t) * 6);
     msg->msg_number = msg_count++;
     msg->ttl = MAX_HOP_COUNT;
 
