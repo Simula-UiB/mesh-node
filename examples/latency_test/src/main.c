@@ -31,7 +31,7 @@
 #define L1_GPIO_PIN DT_GPIO_PIN(L1_NODE, gpios)
 #define L1_GPIO_FLAGS (GPIO_INPUT | DT_GPIO_FLAGS(L1_NODE, gpios))
 
-LOG_MODULE_REGISTER(main, LOG_LEVEL_ERR);
+LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 
 static struct gpio_callback gpio_cb_data;
 static const struct device *led0, *led1;
