@@ -146,6 +146,8 @@ int node_send(struct message *msg)
     msg->msg_number = msg_count++;
     msg->ttl = MAX_HOP_COUNT;
 
+    hash_add(hash_packet(msg));
+
     return node_radio_send(msg);
 }
 

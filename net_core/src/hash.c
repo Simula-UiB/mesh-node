@@ -24,6 +24,8 @@ size_t hash_size = 0;
 // TODO Find out why this is too small without the constant.
 K_HEAP_DEFINE(hash_heap, sizeof(struct node) * MAX_HASH_COUNT_LIMIT * 8);
 
+K_MUTEX_DEFINE(hash_mutex);
+
 uint32_t queue[MAX_HASH_COUNT_LIMIT];
 size_t queue_back = MAX_HASH_COUNT_LIMIT - 1;
 size_t queue_front = 0;
@@ -114,6 +116,7 @@ void hash_remove(uint32_t hash_val)
  */
 void hash_add(uint32_t hash_val)
 {
+    k_mutex_lock(&hash_mutex, K_FOREVER);
     while (hash_size >= MAX_HASH_COUNT_LIMIT)
     {
         uint32_t old_hash = dequeue();
@@ -132,6 +135,7 @@ void hash_add(uint32_t hash_val)
     new_node->next = buckets[bucket];
     buckets[bucket] = new_node;
     hash_size++;
+    k_mutex_unlock(&hash_mutex);
 }
 
 bool hash_contains(uint32_t hash_val)
