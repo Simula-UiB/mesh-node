@@ -55,7 +55,6 @@ int cmd_send(const struct shell *shell, size_t argc, char **argv)
         }
     }
 
-
     uint8_t data[MAX_MESSAGE_SIZE];
     struct mesh_msg msg = {
         .data = data,
@@ -67,7 +66,7 @@ int cmd_send(const struct shell *shell, size_t argc, char **argv)
 
     k_msleep(10);
     gpio_pin_set(led0, L0_GPIO_PIN, 0);
-    
+
     return 0;
 }
 
@@ -96,7 +95,7 @@ void main(void)
  */
 void mesh_receive(struct mesh_msg msg)
 {
-    /* Record time immediately */ 
+    /* Record time immediately */
     uint32_t recv_time = k_cycle_get_32();
 
     uint32_t diff = recv_time - tx_time;
