@@ -1,4 +1,4 @@
-# Example application for sending messages with a button press
+# Example application for testing the latency of messages
 
 ## Build and flash to the nrf5340 application core
 
