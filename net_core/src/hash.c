@@ -2,6 +2,8 @@
 #include <stdio.h>
 
 #include <common.h>
+#include <message.h>
+
 #include <msg.h>
 #include <node.h>
 

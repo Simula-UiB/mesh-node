@@ -21,7 +21,11 @@
 #include <ipc/rpmsg_service.h>
 
 #include <common.h>
+
 #include <mesh.h>
+
+// TODO Remove this and fix packaging
+#define MAX_MESSAGE_SIZE 255
 
 LOG_MODULE_REGISTER(mesh_access, GLOBAL_LOG_LEVEL);
 

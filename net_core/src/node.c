@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include <common.h>
+#include <message.h>
 #include <msg.h>
 
 #include <hash.h>
@@ -33,8 +34,8 @@ uint8_t node_addr[6];
 //uint8_t node_dst_addr[6] = {0xe2, 0xbb, 0x82, 0x7f, 0x52, 0x8f}; /* 960180795 */
 //uint8_t node_dst_addr[6] = {0xbf, 0x2b, 0xca, 0x94, 0xcc, 0x30}; /* 960150638 */
 //uint8_t node_dst_addr[6] = {0xe6, 0x09, 0xb2, 0x18, 0x41, 0x23}; /* 960131836 */
-uint8_t node_dst_addr[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-//uint8_t node_dst_addr[6] = {0, 0, 0, 0, 0, 0};
+//uint8_t node_dst_addr[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+uint8_t node_dst_addr[6] = {0, 0, 0, 0, 0, 0};
 
 uint8_t node_broadcast_addr[6] = {0, 0, 0, 0, 0, 0};
 
@@ -42,33 +43,12 @@ K_HEAP_DEFINE(node_heap, (sizeof(struct message) + MAX_MESSAGE_SIZE) * 10);
 
 void node_enqueue(uint8_t *data, size_t length)
 {
-    if (length < HEADER_LENGTH ||
-        length > MAX_MESSAGE_SIZE ||
-        length != data[PAYLOAD_LENGTH_POS] + HEADER_LENGTH)
-    {
-        LOG_DBG("Invalid packet");
-        return;
-    }
-    struct message *msg = (struct message *)k_heap_alloc(&node_heap, sizeof(struct message), K_NO_WAIT);
+    struct message *msg = message_from_buffer(&node_heap, data, length);
     if (msg == NULL)
     {
-        LOG_ERR("Cannot allocate heap memory");
+        LOG_DBG("Failed to parse packet.");
         return;
     }
-    memcpy(msg->src_mac, data + SRC_MAC_POS, sizeof(uint8_t) * 6);
-    memcpy(msg->original_src_mac, data + ORIGINAL_SRC_MAC_POS, sizeof(uint8_t) * 6);
-    memcpy(msg->dst_mac, data + DST_MAC_POS, sizeof(uint8_t) * 6);
-    msg->msg_number = data[MSG_NUMBER_POS];
-    msg->ttl = data[TTL_POS];
-    msg->payload_len = data[PAYLOAD_LENGTH_POS];
-    msg->payload = (uint8_t *)k_heap_alloc(&node_heap, msg->payload_len, K_NO_WAIT);
-    if (msg->payload == NULL)
-    {
-        LOG_ERR("Cannot allocate heap memory");
-        k_heap_free(&node_heap, msg);
-        return;
-    }
-    memcpy(msg->payload, data + DATA_POS, msg->payload_len);
     while (k_msgq_put(&node_msgq, &msg, K_NO_WAIT) != 0)
     {
         /* message queue is full: purge old data & try again */
@@ -78,14 +58,8 @@ void node_enqueue(uint8_t *data, size_t length)
 
 int node_radio_send(struct message *msg)
 {
-    memcpy(node_send_buf + SRC_MAC_POS, msg->src_mac, sizeof(uint8_t) * 6);
-    memcpy(node_send_buf + ORIGINAL_SRC_MAC_POS, msg->original_src_mac, sizeof(uint8_t) * 6);
-    memcpy(node_send_buf + DST_MAC_POS, msg->dst_mac, sizeof(uint8_t) * 6);
-    node_send_buf[MSG_NUMBER_POS] = msg->msg_number;
-    node_send_buf[TTL_POS] = msg->ttl;
-    node_send_buf[PAYLOAD_LENGTH_POS] = msg->payload_len;
-    memcpy(node_send_buf + DATA_POS, msg->payload, msg->payload_len);
-    return radio_send(node_send_buf, msg->payload_len + HEADER_LENGTH);
+    size_t size = message_to_buffer(node_send_buf, msg);
+    return radio_send(node_send_buf, size);
 }
 
 void node_process_packet()

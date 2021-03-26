@@ -6,6 +6,7 @@
 #include <nrfx.h>
 
 #include <common.h>
+#include <message.h>
 #include <msg.h>
 
 #include <radio.h>

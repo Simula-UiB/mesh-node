@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.8.2)
 
 set(BOARD nrf5340dk_nrf5340_cpunet)
 
+list(APPEND ZEPHYR_EXTRA_MODULES ${CMAKE_SOURCE_DIR}/../message/)
+
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(NONE)
 

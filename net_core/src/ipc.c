@@ -21,6 +21,7 @@
 #include <ipc/rpmsg_service.h>
 
 #include <common.h>
+#include <message.h>
 #include <msg.h>
 
 #include <ipc.h>

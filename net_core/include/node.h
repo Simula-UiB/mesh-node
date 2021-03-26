@@ -1,13 +1,3 @@
-#define HEADER_LENGTH 22
-
-#define SRC_MAC_POS 0
-#define ORIGINAL_SRC_MAC_POS 6
-#define DST_MAC_POS 12
-#define MSG_NUMBER_POS 18
-#define TTL_POS 20
-#define PAYLOAD_LENGTH_POS 21
-#define DATA_POS 22
-
 #define MAX_HASH_COUNT_LIMIT 100
 
 /**
