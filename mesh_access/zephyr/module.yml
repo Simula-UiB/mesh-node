@@ -2,3 +2,5 @@ name: mesh_access
 build:
     cmake: .
     kconfig: ./Kconfig
+    depends:
+        - message

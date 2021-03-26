@@ -62,19 +62,15 @@ void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t
         sprintf(data, "Hello world from 4!");
         break;
     }
-    struct mesh_msg msg = {
-        .data = data,
-        .len = strlen(data)};
-    LOG_HEXDUMP_INF(msg.data, msg.len, "sent:");
-    mesh_send(msg);
+    size_t len = strlen(data);
+    LOG_HEXDUMP_INF(data, len, "sent:");
+    mesh_send(data, len);
 }
 
 void main(void)
 {
     LOG_INF("Example app on app core started.");
     const struct device *button0, *button1, *button2, *button3;
-
-    LOG_INF("%d", SW0_GPIO_PIN);
 
     button0 = device_get_binding(SW0_GPIO_LABEL);
     gpio_pin_configure(button0, SW0_GPIO_PIN, SW0_GPIO_FLAGS);
@@ -103,8 +99,8 @@ void main(void)
 /**
  * @brief Mesh receive callback
  */
-void mesh_receive(struct mesh_msg msg)
+void mesh_receive(uint8_t *data, size_t len)
 {
-    LOG_INF("Received mesh message. Length: %d", msg.len);
-    LOG_HEXDUMP_INF(msg.data, msg.len, "Message");
+    LOG_INF("Received mesh message. Length: %d", len);
+    LOG_HEXDUMP_INF(data, len, "Message");
 }

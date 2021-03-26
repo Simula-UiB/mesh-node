@@ -1,13 +1,4 @@
 /**
- * @brief Mesh message struct
- */
-struct mesh_msg
-{
-    size_t len;
-    uint8_t *data;
-};
-
-/**
  * @brief Send message through mesh node
  *
  * Message length must be less than MAX_MESSAGE_SIZE
@@ -17,11 +8,11 @@ struct mesh_msg
  * @returns Number of bytes sent, or negative error code if there was an error.
  *
  */
-int mesh_send(struct mesh_msg msg);
+int mesh_send(uint8_t *data, size_t len);
 
 /**
  * @brief Mesh receive callback
  *
  * @param[in] msg Mesh message struct
  */
-void mesh_receive(struct mesh_msg msg);
+void mesh_receive(uint8_t *data, size_t len);

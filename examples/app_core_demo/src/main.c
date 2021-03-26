@@ -19,9 +19,6 @@ void main(void)
 
     uint8_t data[64];
     sprintf(data, "Hello world!");
-    struct mesh_msg msg = {
-        .data = data,
-        .len = 12};
 
     k_msleep(2000); // Allow logs time to flush
 
@@ -29,16 +26,16 @@ void main(void)
     {
         // Send a message every two seconds
         k_msleep(2000);
-        LOG_DBG("Sending mesh message. Length: %d", msg.len);
-        mesh_send(msg);
+        LOG_DBG("Sending mesh message. Length: %d", 12);
+        mesh_send(data, 12);
     }
 }
 
 /**
  * @brief Mesh receive callback
  */
-void mesh_receive(struct mesh_msg msg)
+void mesh_receive(uint8_t *data, size_t len)
 {
-    LOG_INF("Received mesh message. Length: %d", msg.len);
-    LOG_HEXDUMP_INF(msg.data, msg.len, "Message");
+    LOG_INF("Received mesh message. Length: %d", len);
+    LOG_HEXDUMP_INF(data, len, "Message");
 }

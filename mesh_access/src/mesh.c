@@ -21,41 +21,47 @@
 #include <ipc/rpmsg_service.h>
 
 #include <common.h>
+#include <message.h>
 
 #include <mesh.h>
 
-// TODO Remove this and fix packaging
-#define MAX_MESSAGE_SIZE 255
-
 LOG_MODULE_REGISTER(mesh_access, GLOBAL_LOG_LEVEL);
+
+K_HEAP_DEFINE(mesh_heap, (sizeof(struct message) + MAX_MESSAGE_SIZE) * 10);
+
+uint8_t mesh_send_buf[MAX_MESSAGE_SIZE];
 
 static int endpoint_id;
 
 int rpmsg_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src,
              void *priv)
 {
-    /* Fill mesh message struct */
-    uint8_t msg_data[MAX_MESSAGE_SIZE];
-    struct mesh_msg msg = {
-        .data = msg_data,
-        .len = len};
-    memcpy(msg_data, data, len);
+    struct message *message = message_from_buffer(&mesh_heap, data, len);
 
     /* Call callback function with mesh message */
-    mesh_receive(msg);
+    mesh_receive(message->payload, message->payload_len);
+
+    k_heap_free(&mesh_heap, message->payload);
+    k_heap_free(&mesh_heap, message);
 
     return RPMSG_SUCCESS;
 }
 
-int mesh_send(struct mesh_msg msg)
+int mesh_send(uint8_t *data, size_t len)
 {
-    if (msg.len > MAX_MESSAGE_SIZE)
+    if (len > MAX_MESSAGE_SIZE)
     {
         LOG_ERR("Mesh message too long");
         return -1;
     }
+
+    struct message message = {
+        .payload_len = len,
+        .payload = data};
+
+    size_t size = message_to_buffer(mesh_send_buf, &message);
     /* Send IPC message. Returns number of bytes sent, or negative error code */
-    return rpmsg_service_send(endpoint_id, msg.data, msg.len);
+    return rpmsg_service_send(endpoint_id, mesh_send_buf, size);
 }
 
 /* Register endpoint before RPMsg Service is initialized. */
