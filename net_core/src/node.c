@@ -110,7 +110,7 @@ void node_process_packet()
 
 int node_send(struct message *msg)
 {
-    if (msg->payload_len + HEADER_LENGTH > MAX_MESSAGE_SIZE)
+    if (msg->payload_len > MAX_PAYLOAD_SIZE)
     {
         return -1;
     }
