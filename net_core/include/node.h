@@ -3,7 +3,7 @@
 /**
  * @brief Add a message to a queue so that it can be procecedd later.
  */
-void node_enqueue(uint8_t *data, size_t length);
+void node_enqueue(struct message *msg);
 
 /**
  * @brief Send a messsage over the radio with an added header.

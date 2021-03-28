@@ -24,8 +24,6 @@ LOG_MODULE_REGISTER(radio, GLOBAL_LOG_LEVEL);
 #define THREAD_STACK_SIZE 2048
 #define THREAD_PRIORITY 5
 
-K_HEAP_DEFINE(radio_heap, (sizeof(struct mesh_msg) + MAX_MESSAGE_SIZE) * 10);
-
 /* Radio transmission buffer. +1 byte for length byte. */
 uint8_t rf_tx_buf[MAX_MESSAGE_SIZE + 1];
 /* Radio receive buffer */
@@ -101,20 +99,15 @@ void radio_rx_thread(void *p1, void *p2, void *p3)
         {
             length = MAX_MESSAGE_SIZE;
         }
-        uint8_t *data = (uint8_t *)k_heap_alloc(&radio_heap, length, K_NO_WAIT);
-        if (data == NULL)
+        struct message *msg = message_from_buffer(rf_rx_buf + RF_BUFFER_PAYLOAD_OFFSET, length);
+        if (msg == NULL)
         {
-            LOG_ERR("Cannot allocate heap memory");
+            LOG_INF("Failed to parse message.");
             continue;
         }
-        memcpy(data, rf_rx_buf + RF_BUFFER_PAYLOAD_OFFSET, length);
-
-        LOG_HEXDUMP_DBG(data, length, "Radio RX data");
 
         /* Callback function for received radio frame */
-        radio_receive_cb(data, length);
-
-        k_heap_free(&radio_heap, data);
+        radio_receive_cb(msg);
     }
 }
 

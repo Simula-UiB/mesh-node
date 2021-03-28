@@ -28,8 +28,6 @@
 
 LOG_MODULE_REGISTER(ipc, GLOBAL_LOG_LEVEL);
 
-K_HEAP_DEFINE(ipc_heap, (sizeof(struct message) + MAX_MESSAGE_SIZE) * 10);
-
 uint8_t ipc_send_buf[MAX_MESSAGE_SIZE];
 
 static int endpoint_id;
@@ -38,18 +36,15 @@ int rpmsg_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src,
              void *priv)
 {
     /* Fill IPC message struct */
-    struct message *msg = message_from_buffer(&ipc_heap, data, len);
+    struct message *msg = message_from_buffer(data, len);
     if (msg == NULL)
     {
-        LOG_ERR("Cannot allocate heap memory");
+        LOG_INF("Failed to parse msg.");
         return RPMSG_ERR_NO_MEM;
     }
 
     /* Call callback function with ipc message */
     ipc_receive_cb(msg);
-
-    k_heap_free(&ipc_heap, msg->payload);
-    k_heap_free(&ipc_heap, msg);
 
     return RPMSG_SUCCESS;
 }
