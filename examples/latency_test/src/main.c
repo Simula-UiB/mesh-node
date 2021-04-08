@@ -18,7 +18,6 @@
 
 #include <common.h>
 #include <mesh.h>
-#include <message.h>
 
 #define L0_NODE DT_ALIAS(led0)
 
@@ -91,7 +90,7 @@ void main(void)
 /**
  * @brief Mesh receive callback
  */
-void mesh_receive(uint8_t *data, size_t len)
+void mesh_receive(uint8_t *data, size_t len, uint8_t *src, bool broadcast)
 {
     /* Record time immediately */
     uint32_t recv_time = k_cycle_get_32();
@@ -106,6 +105,7 @@ void mesh_receive(uint8_t *data, size_t len)
     uint32_t latency = k_cyc_to_us_floor32(diff);
     printk("latency: %d\n", latency);
 
-    LOG_INF("Received mesh message. Length: %d", len);
+    LOG_INF("Received mesh message. Length: %d. Broadcast: %s", len, broadcast ? "true" : "false");
+    LOG_HEXDUMP_INF(src, MAC_LEN, "Source:");
     LOG_HEXDUMP_INF(data, len, "Message");
 }

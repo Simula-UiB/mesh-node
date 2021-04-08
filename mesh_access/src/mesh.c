@@ -21,7 +21,6 @@
 #include <ipc/rpmsg_service.h>
 
 #include <common.h>
-#include <message.h>
 
 #include <mesh.h>
 
@@ -29,17 +28,20 @@ LOG_MODULE_REGISTER(mesh_access, GLOBAL_LOG_LEVEL);
 
 uint8_t mesh_send_buf[MAX_MESSAGE_SIZE];
 
+uint8_t broadcast_addr[MAC_LEN] = {0};
+
 static int endpoint_id;
 
 int rpmsg_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src,
              void *priv)
 {
-    struct message *message = message_from_buffer(data, len);
+    struct message *msg = message_from_buffer(data, len);
 
     /* Call callback function with mesh message */
-    mesh_receive(message->payload, message->payload_len);
+    mesh_receive(msg->payload, msg->payload_len, msg->src_mac,
+                 memcmp(msg->dst_mac, broadcast_addr, MAC_LEN) == 0);
 
-    message_free(message);
+    message_free(msg);
 
     return RPMSG_SUCCESS;
 }
@@ -63,8 +65,6 @@ int mesh_send(uint8_t *data, uint8_t *dst, size_t len)
 
 int mesh_send_broadcast(uint8_t *data, size_t len)
 {
-    uint8_t broadcast_addr[MAC_LEN] = {0};
-
     return mesh_send(data, broadcast_addr, len);
 }
 

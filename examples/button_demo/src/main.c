@@ -46,7 +46,7 @@ static struct gpio_callback button_cb_data;
 
 void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
-    uint8_t data[64];
+    uint8_t data[MAX_PAYLOAD_SIZE];
     switch (pins)
     {
     case BIT(SW0_GPIO_PIN):
@@ -99,8 +99,9 @@ void main(void)
 /**
  * @brief Mesh receive callback
  */
-void mesh_receive(uint8_t *data, size_t len)
+void mesh_receive(uint8_t *data, size_t len, uint8_t *src, bool broadcast)
 {
-    LOG_INF("Received mesh message. Length: %d", len);
+    LOG_INF("Received mesh message. Length: %d. Broadcast: %s", len, broadcast ? "true" : "false");
+    LOG_HEXDUMP_INF(src, MAC_LEN, "Source:");
     LOG_HEXDUMP_INF(data, len, "Message");
 }

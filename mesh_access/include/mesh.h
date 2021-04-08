@@ -1,3 +1,5 @@
+#include <message.h>
+
 /**
  * @brief Send message through mesh node
  *
@@ -17,4 +19,4 @@ int mesh_send(uint8_t *data, uint8_t *dst, size_t len);
  *
  * @param[in] msg Mesh message struct
  */
-void mesh_receive(uint8_t *data, size_t len);
+void mesh_receive(uint8_t *data, size_t len, uint8_t *src, bool broadcast);
