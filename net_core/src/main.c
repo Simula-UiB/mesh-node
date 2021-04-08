@@ -60,9 +60,9 @@ void main(void)
 /**
  * @brief Callback for received radio frames
  */
-void radio_receive_cb(uint8_t *data, size_t length)
+void radio_receive_cb(struct message *msg)
 {
-    node_enqueue(data, length);
+    node_enqueue(msg);
 }
 
 /**

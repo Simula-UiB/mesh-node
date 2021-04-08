@@ -27,8 +27,6 @@
 
 LOG_MODULE_REGISTER(mesh_access, GLOBAL_LOG_LEVEL);
 
-K_HEAP_DEFINE(mesh_heap, (sizeof(struct message) + MAX_MESSAGE_SIZE) * 10);
-
 uint8_t mesh_send_buf[MAX_MESSAGE_SIZE];
 
 static int endpoint_id;
@@ -36,13 +34,12 @@ static int endpoint_id;
 int rpmsg_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src,
              void *priv)
 {
-    struct message *message = message_from_buffer(&mesh_heap, data, len);
+    struct message *message = message_from_buffer(data, len);
 
     /* Call callback function with mesh message */
     mesh_receive(message->payload, message->payload_len);
 
-    k_heap_free(&mesh_heap, message->payload);
-    k_heap_free(&mesh_heap, message);
+    message_free(message);
 
     return RPMSG_SUCCESS;
 }

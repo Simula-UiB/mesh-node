@@ -39,16 +39,8 @@ uint8_t node_dst_addr[6] = {0, 0, 0, 0, 0, 0};
 
 uint8_t node_broadcast_addr[6] = {0, 0, 0, 0, 0, 0};
 
-K_HEAP_DEFINE(node_heap, (sizeof(struct message) + MAX_MESSAGE_SIZE) * 10);
-
-void node_enqueue(uint8_t *data, size_t length)
+void node_enqueue(struct message *msg)
 {
-    struct message *msg = message_from_buffer(&node_heap, data, length);
-    if (msg == NULL)
-    {
-        LOG_DBG("Failed to parse packet.");
-        return;
-    }
     while (k_msgq_put(&node_msgq, &msg, K_NO_WAIT) != 0)
     {
         /* message queue is full: purge old data & try again */
@@ -59,6 +51,7 @@ void node_enqueue(uint8_t *data, size_t length)
 int node_radio_send(struct message *msg)
 {
     size_t size = message_to_buffer(node_send_buf, msg);
+    message_free(msg);
     return radio_send(node_send_buf, size);
 }
 
@@ -71,8 +64,7 @@ void node_process_packet()
 
     if (hash_contains(hash))
     {
-        k_heap_free(&node_heap, msg->payload);
-        k_heap_free(&node_heap, msg);
+        message_free(msg);
         return;
     }
 
@@ -81,8 +73,7 @@ void node_process_packet()
     if (memcmp(msg->dst_mac, node_addr, sizeof(uint8_t) * 6) == 0)
     {
         node_receive(msg);
-        k_heap_free(&node_heap, msg->payload);
-        k_heap_free(&node_heap, msg);
+        message_free(msg);
         return;
     }
 
@@ -94,8 +85,7 @@ void node_process_packet()
 
     if (msg->ttl <= 0)
     {
-        k_heap_free(&node_heap, msg->payload);
-        k_heap_free(&node_heap, msg);
+        message_free(msg);
         return;
     }
 
@@ -104,8 +94,6 @@ void node_process_packet()
 
     LOG_HEXDUMP_DBG(msg->payload, msg->payload_len, "Forwarding");
     node_radio_send(msg);
-    k_heap_free(&node_heap, msg->payload);
-    k_heap_free(&node_heap, msg);
 }
 
 int node_send(struct message *msg)

@@ -1,5 +1,3 @@
-#include <kernel.h>
-
 #define MAX_MESSAGE_SIZE 255
 
 #define SRC_MAC_POS 0
@@ -25,6 +23,8 @@ struct message
     uint8_t *payload;
 };
 
-struct message *message_from_buffer(struct k_heap *heap, uint8_t *data, size_t length);
+struct message *message_from_buffer(uint8_t *data, size_t length);
 
 size_t message_to_buffer(uint8_t *buffer, struct message *msg);
+
+void message_free(struct message *msg);
