@@ -30,13 +30,6 @@ uint8_t node_send_buf[MAX_MESSAGE_SIZE];
 
 uint8_t node_addr[6];
 
-// TODO Find a better way to handle destination MACs
-//uint8_t node_dst_addr[6] = {0xe2, 0xbb, 0x82, 0x7f, 0x52, 0x8f}; /* 960180795 */
-//uint8_t node_dst_addr[6] = {0xbf, 0x2b, 0xca, 0x94, 0xcc, 0x30}; /* 960150638 */
-//uint8_t node_dst_addr[6] = {0xe6, 0x09, 0xb2, 0x18, 0x41, 0x23}; /* 960131836 */
-//uint8_t node_dst_addr[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-uint8_t node_dst_addr[6] = {0, 0, 0, 0, 0, 0};
-
 uint8_t node_broadcast_addr[6] = {0, 0, 0, 0, 0, 0};
 
 K_HEAP_DEFINE(node_heap, (sizeof(struct message) + MAX_MESSAGE_SIZE) * 10);
@@ -116,7 +109,6 @@ int node_send(struct message *msg)
     }
     memcpy(msg->src_mac, node_addr, sizeof(uint8_t) * 6);
     memcpy(msg->original_src_mac, node_addr, sizeof(uint8_t) * 6);
-    memcpy(msg->dst_mac, node_dst_addr, sizeof(uint8_t) * 6);
     msg->msg_number = msg_count++;
     msg->ttl = MAX_HOP_COUNT;
 

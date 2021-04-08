@@ -27,7 +27,7 @@ void main(void)
         // Send a message every two seconds
         k_msleep(2000);
         LOG_DBG("Sending mesh message. Length: %d", 12);
-        mesh_send(data, 12);
+        mesh_send_broadcast(data, 12);
     }
 }
 

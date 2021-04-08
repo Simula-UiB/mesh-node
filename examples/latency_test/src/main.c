@@ -60,7 +60,7 @@ int cmd_send(const struct shell *shell, size_t argc, char **argv)
     LOG_HEXDUMP_INF(data, length, "sent:");
 
     gpio_pin_set(led0, L0_GPIO_PIN, 1);
-    mesh_send(data, length);
+    mesh_send_broadcast(data, length);
 
     k_msleep(10);
     gpio_pin_set(led0, L0_GPIO_PIN, 0);
