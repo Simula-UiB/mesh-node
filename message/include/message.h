@@ -1,6 +1,6 @@
 #define MAX_MESSAGE_SIZE 255
 
-#define MAC_LEN 6
+#define MAC_LEN 3
 
 #define SRC_MAC_POS 0
 #define ORIGINAL_SRC_MAC_POS (SRC_MAC_POS + MAC_LEN)
