@@ -28,7 +28,7 @@ LOG_MODULE_REGISTER(mesh_access, GLOBAL_LOG_LEVEL);
 
 uint8_t mesh_send_buf[MAX_MESSAGE_SIZE];
 
-uint8_t broadcast_addr[MAC_LEN] = {0};
+uint8_t broadcast_addr[MAC_LEN] = {0xff};
 
 static int endpoint_id;
 
