@@ -64,7 +64,7 @@ void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t
     }
     size_t len = strlen(data);
     LOG_HEXDUMP_INF(data, len, "sent:");
-    mesh_send(data, len);
+    mesh_send_broadcast(data, len);
 }
 
 void main(void)

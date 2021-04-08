@@ -44,7 +44,7 @@ int rpmsg_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src,
     return RPMSG_SUCCESS;
 }
 
-int mesh_send(uint8_t *data, size_t len)
+int mesh_send(uint8_t *data, uint8_t dst[static 6], size_t len)
 {
     if (len > MAX_MESSAGE_SIZE)
     {
@@ -55,10 +55,18 @@ int mesh_send(uint8_t *data, size_t len)
     struct message message = {
         .payload_len = len,
         .payload = data};
-
+    memcpy(message.dst_mac, dst, 6);
     size_t size = message_to_buffer(mesh_send_buf, &message);
     /* Send IPC message. Returns number of bytes sent, or negative error code */
+    LOG_HEXDUMP_INF(mesh_send_buf, len + HEADER_LENGTH, "sending:");
     return rpmsg_service_send(endpoint_id, mesh_send_buf, size);
+}
+
+int mesh_send_broadcast(uint8_t *data, size_t len)
+{
+    uint8_t broadcast_addr[6] = {0, 0, 0, 0, 0, 0};
+
+    return mesh_send(data, broadcast_addr, len);
 }
 
 /* Register endpoint before RPMsg Service is initialized. */

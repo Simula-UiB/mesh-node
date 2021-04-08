@@ -8,7 +8,9 @@
  * @returns Number of bytes sent, or negative error code if there was an error.
  *
  */
-int mesh_send(uint8_t *data, size_t len);
+int mesh_send_broadcast(uint8_t *data, size_t len);
+
+int mesh_send(uint8_t *data, uint8_t dst[static 6], size_t len);
 
 /**
  * @brief Mesh receive callback
