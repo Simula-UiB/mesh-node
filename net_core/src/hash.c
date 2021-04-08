@@ -63,11 +63,11 @@ uint32_t hash_packet(struct message *msg)
 {
     uint32_t hash = 5381;
 
-    for (size_t i = 0; i < 6; i++)
+    for (size_t i = 0; i < MAC_LEN; i++)
     {
         hash += (hash << 5) + msg->src_mac[i];
     }
-    for (size_t i = 0; i < 6; i++)
+    for (size_t i = 0; i < MAC_LEN; i++)
     {
         hash += (hash << 5) + msg->dst_mac[i];
     }

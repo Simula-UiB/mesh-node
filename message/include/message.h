@@ -1,22 +1,24 @@
 #define MAX_MESSAGE_SIZE 255
 
-#define SRC_MAC_POS 0
-#define ORIGINAL_SRC_MAC_POS 6
-#define DST_MAC_POS 12
-#define MSG_NUMBER_POS 18
-#define TTL_POS 20
-#define PAYLOAD_LENGTH_POS 21
-#define DATA_POS 22
+#define MAC_LEN 6
 
-#define HEADER_LENGTH 22
+#define SRC_MAC_POS 0
+#define ORIGINAL_SRC_MAC_POS (SRC_MAC_POS + MAC_LEN)
+#define DST_MAC_POS (ORIGINAL_SRC_MAC_POS + MAC_LEN)
+#define MSG_NUMBER_POS (DST_MAC_POS + MAC_LEN)
+#define TTL_POS (MSG_NUMBER_POS + 1)
+#define PAYLOAD_LENGTH_POS (TTL_POS + 1)
+#define DATA_POS (PAYLOAD_LENGTH_POS + 1)
+
+#define HEADER_LENGTH (DATA_POS)
 
 #define MAX_PAYLOAD_SIZE (MAX_MESSAGE_SIZE - HEADER_LENGTH)
 
 struct message
 {
-    uint8_t src_mac[6];
-    uint8_t original_src_mac[6];
-    uint8_t dst_mac[6];
+    uint8_t src_mac[MAC_LEN];
+    uint8_t original_src_mac[MAC_LEN];
+    uint8_t dst_mac[MAC_LEN];
     uint8_t msg_number;
     uint8_t ttl;
     uint8_t payload_len;
