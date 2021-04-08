@@ -27,7 +27,7 @@ struct message *message_from_buffer(uint8_t *data, size_t length)
         LOG_ERR("Cannot allocate heap memory");
         return NULL;
     }
-    memcpy(msg->src_mac, data + SRC_MAC_POS, MAC_LEN;
+    memcpy(msg->src_mac, data + SRC_MAC_POS, MAC_LEN);
     memcpy(msg->original_src_mac, data + ORIGINAL_SRC_MAC_POS, MAC_LEN);
     memcpy(msg->dst_mac, data + DST_MAC_POS, MAC_LEN);
     msg->msg_number = data[MSG_NUMBER_POS];

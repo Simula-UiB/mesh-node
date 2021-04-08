@@ -10,7 +10,7 @@
  */
 int mesh_send_broadcast(uint8_t *data, size_t len);
 
-int mesh_send(uint8_t *data, uint8_t dst[static MAC_LEN], size_t len);
+int mesh_send(uint8_t *data, uint8_t *dst, size_t len);
 
 /**
  * @brief Mesh receive callback

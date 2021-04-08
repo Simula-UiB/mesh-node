@@ -44,7 +44,7 @@ int rpmsg_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src,
     return RPMSG_SUCCESS;
 }
 
-int mesh_send(uint8_t *data, uint8_t dst[static MAC_LEN], size_t len)
+int mesh_send(uint8_t *data, uint8_t *dst, size_t len)
 {
     if (len > MAX_MESSAGE_SIZE)
     {
@@ -58,7 +58,6 @@ int mesh_send(uint8_t *data, uint8_t dst[static MAC_LEN], size_t len)
     memcpy(message.dst_mac, dst, MAC_LEN);
     size_t size = message_to_buffer(mesh_send_buf, &message);
     /* Send IPC message. Returns number of bytes sent, or negative error code */
-    LOG_HEXDUMP_INF(mesh_send_buf, len + HEADER_LENGTH, "sending:");
     return rpmsg_service_send(endpoint_id, mesh_send_buf, size);
 }
 
