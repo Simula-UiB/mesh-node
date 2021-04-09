@@ -30,7 +30,7 @@ uint8_t node_send_buf[MAX_MESSAGE_SIZE];
 
 uint8_t node_addr[MAC_LEN];
 
-uint8_t node_broadcast_addr[MAC_LEN] = {0xff};
+uint8_t node_broadcast_addr[MAC_LEN] = {[0 ... MAC_LEN - 1] = 0xff};
 
 void node_enqueue(struct message *msg)
 {
