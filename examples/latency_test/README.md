@@ -15,3 +15,7 @@ To use, flash two boards, and connect a GPIO line from pin 28 at the transmitter
 In the serial console of the transmitter, use the command `send <packetsize>` to send a test packet. For example: `send 10` to send a 10 byte message.
 
 In the serial console of the receiver, the one-way latency will be printed on the format: `latency: <latency in microseconds>`, for example: `latency: 1202` if the latency was 1202μs.
+
+# Automated test script
+
+See [measure\_latency.py](measure_latency.py)
