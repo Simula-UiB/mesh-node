@@ -22,7 +22,6 @@
 
 #include <common.h>
 #include <message.h>
-#include <msg.h>
 
 #include <ipc.h>
 
