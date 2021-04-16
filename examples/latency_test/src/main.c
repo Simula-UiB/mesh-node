@@ -72,6 +72,7 @@ SHELL_CMD_REGISTER(send, NULL, "Send test packet", cmd_send);
 void main(void)
 {
     LOG_INF("Latency test application on app core started.");
+    init_mesh();
 
     led0 = device_get_binding(L0_GPIO_LABEL);
     gpio_pin_configure(led0, L0_GPIO_PIN, L0_GPIO_FLAGS);
