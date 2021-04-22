@@ -47,7 +47,7 @@ void main(void)
     init_radio();
     LOG_INF("Radio initialized");
 
-    /* Radio init */
+    /* Node init */
     init_node();
     LOG_INF("Node initialized");
 
