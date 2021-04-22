@@ -70,6 +70,7 @@ void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t
 void main(void)
 {
     LOG_INF("Example app on app core started.");
+    init_mesh();
     const struct device *button0, *button1, *button2, *button3;
 
     button0 = device_get_binding(SW0_GPIO_LABEL);

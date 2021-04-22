@@ -16,6 +16,7 @@ LOG_MODULE_REGISTER(main, GLOBAL_LOG_LEVEL);
 void main(void)
 {
     LOG_INF("Example app on app core started.");
+    init_mesh();
 
     uint8_t data[MAX_PAYLOAD_SIZE];
     sprintf(data, "Hello world!");

@@ -1,6 +1,14 @@
 #include <message.h>
 
 /**
+ * @brief Initialize the mesh library.
+ *
+ * Must be ran before messages can be received.
+ * 
+ */
+void init_mesh();
+
+/**
  * @brief Broadcast a message through mesh network.
  *
  * Message length must be less than MAX_PAYLOAD_SIZE

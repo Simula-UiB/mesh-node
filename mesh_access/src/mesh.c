@@ -46,6 +46,16 @@ int rpmsg_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src,
     return RPMSG_SUCCESS;
 }
 
+void init_mesh()
+{
+    while (!rpmsg_service_endpoint_is_bound(endpoint_id))
+    {
+        k_sleep(K_MSEC(1));
+    }
+    uint8_t data[0];
+    rpmsg_service_send(endpoint_id, data, 0);
+}
+
 int mesh_send(uint8_t *data, uint8_t *dst, size_t len)
 {
     if (len > MAX_MESSAGE_SIZE)
