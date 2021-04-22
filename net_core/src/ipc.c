@@ -22,7 +22,6 @@
 
 #include <common.h>
 #include <message.h>
-#include <msg.h>
 
 #include <ipc.h>
 
@@ -52,12 +51,7 @@ int rpmsg_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src,
 int ipc_send(struct message *msg)
 {
     size_t size = message_to_buffer(ipc_send_buf, msg);
-    int ret = rpmsg_service_send(endpoint_id, ipc_send_buf, size);
-    if (ret < 0)
-    {
-        return ret;
-    }
-    return 0;
+    return rpmsg_service_send(endpoint_id, ipc_send_buf, size);
 }
 
 /* Register endpoint before RPMsg Service is initialized. */

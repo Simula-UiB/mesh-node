@@ -14,7 +14,6 @@
 
 #include <common.h>
 #include <message.h>
-#include <msg.h>
 
 #include <ipc.h>
 #include <node.h>
@@ -88,5 +87,9 @@ void ipc_receive_cb(struct message *msg)
 void node_receive(struct message *msg)
 {
     LOG_HEXDUMP_DBG(msg->payload, msg->payload_len, "Node RX data");
-    ipc_send(msg);
+    int ret = ipc_send(msg);
+    if (ret < 0)
+    {
+        LOG_ERR("IPC send failed with %d", ret);
+    }
 }
