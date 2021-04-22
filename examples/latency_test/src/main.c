@@ -55,14 +55,11 @@ int cmd_send(const struct shell *shell, size_t argc, char **argv)
         }
     }
 
-    uint8_t data[MAX_MESSAGE_SIZE];
-    struct mesh_msg msg = {
-        .data = data,
-        .len = length};
-    LOG_HEXDUMP_INF(msg.data, msg.len, "sent:");
+    uint8_t data[MAX_PAYLOAD_SIZE];
+    LOG_HEXDUMP_INF(data, length, "sent:");
 
     gpio_pin_set(led0, L0_GPIO_PIN, 1);
-    mesh_send(msg);
+    mesh_send_broadcast(data, length);
 
     k_msleep(10);
     gpio_pin_set(led0, L0_GPIO_PIN, 0);
@@ -93,7 +90,7 @@ void main(void)
 /**
  * @brief Mesh receive callback
  */
-void mesh_receive(struct mesh_msg msg)
+void mesh_receive(uint8_t *data, size_t len, uint8_t *src, bool broadcast)
 {
     /* Record time immediately */
     uint32_t recv_time = k_cycle_get_32();
@@ -108,6 +105,7 @@ void mesh_receive(struct mesh_msg msg)
     uint32_t latency = k_cyc_to_us_floor32(diff);
     printk("latency: %d\n", latency);
 
-    LOG_INF("Received mesh message. Length: %d", msg.len);
-    LOG_HEXDUMP_INF(msg.data, msg.len, "Message");
+    LOG_INF("Received mesh message. Length: %d. Broadcast: %s", len, broadcast ? "true" : "false");
+    LOG_HEXDUMP_INF(src, MAC_LEN, "Source:");
+    LOG_HEXDUMP_INF(data, len, "Message");
 }

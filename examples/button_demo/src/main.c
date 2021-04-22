@@ -46,7 +46,7 @@ static struct gpio_callback button_cb_data;
 
 void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
-    uint8_t data[64];
+    uint8_t data[MAX_PAYLOAD_SIZE];
     switch (pins)
     {
     case BIT(SW0_GPIO_PIN):
@@ -62,19 +62,15 @@ void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t
         sprintf(data, "Hello world from 4!");
         break;
     }
-    struct mesh_msg msg = {
-        .data = data,
-        .len = strlen(data)};
-    LOG_HEXDUMP_INF(msg.data, msg.len, "sent:");
-    mesh_send(msg);
+    size_t len = strlen(data);
+    LOG_HEXDUMP_INF(data, len, "sent:");
+    mesh_send_broadcast(data, len);
 }
 
 void main(void)
 {
     LOG_INF("Example app on app core started.");
     const struct device *button0, *button1, *button2, *button3;
-
-    LOG_INF("%d", SW0_GPIO_PIN);
 
     button0 = device_get_binding(SW0_GPIO_LABEL);
     gpio_pin_configure(button0, SW0_GPIO_PIN, SW0_GPIO_FLAGS);
@@ -103,8 +99,9 @@ void main(void)
 /**
  * @brief Mesh receive callback
  */
-void mesh_receive(struct mesh_msg msg)
+void mesh_receive(uint8_t *data, size_t len, uint8_t *src, bool broadcast)
 {
-    LOG_INF("Received mesh message. Length: %d", msg.len);
-    LOG_HEXDUMP_INF(msg.data, msg.len, "Message");
+    LOG_INF("Received mesh message. Length: %d. Broadcast: %s", len, broadcast ? "true" : "false");
+    LOG_HEXDUMP_INF(src, MAC_LEN, "Source:");
+    LOG_HEXDUMP_INF(data, len, "Message");
 }

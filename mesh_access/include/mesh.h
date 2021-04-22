@@ -1,27 +1,45 @@
-/**
- * @brief Mesh message struct
- */
-struct mesh_msg
-{
-    size_t len;
-    uint8_t *data;
-};
+#include <message.h>
 
 /**
- * @brief Send message through mesh node
+ * @brief Broadcast a message through mesh network.
  *
- * Message length must be less than MAX_MESSAGE_SIZE
+ * Message length must be less than MAX_PAYLOAD_SIZE
  *
- * @param[in] msg Mesh message struct.
+ * @param[in] data Array containing the message.
+ *
+ * @param[in] len The length of the message.
+ * 
+ * @returns Number of bytes sent, or negative error code if there was an error.
+ *
+ */
+int mesh_send_broadcast(uint8_t *data, size_t len);
+
+/**
+ * @brief Send message to a given address through the mesh network.
+ *
+ * Message length must be less than MAX_PAYLOAD_SIZE
+ *
+ * @param[in] data Array containing the message.
+ * 
+ * @param[in] dst Array of length MAC_LEN containing the receiver address.
+ *
+ * @param[in] len The length of the message.
  *
  * @returns Number of bytes sent, or negative error code if there was an error.
  *
  */
-int mesh_send(struct mesh_msg msg);
+int mesh_send(uint8_t *data, uint8_t *dst, size_t len);
 
 /**
  * @brief Mesh receive callback
  *
- * @param[in] msg Mesh message struct
+ * @param[in] data Array containing the message.
+ *
+ * @param[in] len The length of the message.
+ * 
+ * @param[in] src Array of length MAC_LEN containing the sender address.
+ *
+ * @param[in] broadcast Is true if the message was sent as broadcast.
+ * 
  */
-void mesh_receive(struct mesh_msg msg);
+void mesh_receive(uint8_t *data, size_t len, uint8_t *src, bool broadcast);

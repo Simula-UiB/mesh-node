@@ -6,7 +6,7 @@
 #include <nrfx.h>
 
 #include <common.h>
-#include <msg.h>
+#include <message.h>
 
 #include <radio.h>
 
@@ -22,8 +22,6 @@ LOG_MODULE_REGISTER(radio, GLOBAL_LOG_LEVEL);
 /* Thread definitions */
 #define THREAD_STACK_SIZE 2048
 #define THREAD_PRIORITY 5
-
-K_HEAP_DEFINE(radio_heap, (sizeof(struct mesh_msg) + MAX_MESSAGE_SIZE) * 10);
 
 /* Radio transmission buffer. +1 byte for length byte. */
 uint8_t rf_tx_buf[MAX_MESSAGE_SIZE + 1];
@@ -42,7 +40,7 @@ void trigger_tx();
 /**
  * @brief Start radio transmission
  */
-int radio_send(uint8_t *data, uint8_t length)
+int radio_send(uint8_t *data, size_t length)
 {
     int ret = 0;
     /* Fill radio transmission buffer */
@@ -77,6 +75,7 @@ int radio_send(uint8_t *data, uint8_t length)
         ret = -EIO;
     }
     k_sem_take(&rf_tx_completed, K_FOREVER);
+    LOG_DBG("Finished TX");
     return ret;
 }
 
@@ -99,29 +98,15 @@ void radio_rx_thread(void *p1, void *p2, void *p3)
         {
             length = MAX_MESSAGE_SIZE;
         }
-        struct mesh_msg *msg = (struct mesh_msg *)k_heap_alloc(&radio_heap, sizeof(struct mesh_msg), K_NO_WAIT);
+        struct message *msg = message_from_buffer(rf_rx_buf + RF_BUFFER_PAYLOAD_OFFSET, length);
         if (msg == NULL)
         {
-            LOG_ERR("Cannot allocate heap memory");
+            LOG_INF("Failed to parse message.");
             continue;
         }
-        msg->data = (uint8_t *)k_heap_alloc(&radio_heap, length, K_NO_WAIT);
-        if (msg->data == NULL)
-        {
-            LOG_ERR("Cannot allocate heap memory");
-            k_heap_free(&radio_heap, msg);
-            continue;
-        }
-        msg->len = length;
-        memcpy(msg->data, rf_rx_buf + RF_BUFFER_PAYLOAD_OFFSET, length);
-
-        LOG_HEXDUMP_DBG(msg->data, length, "Radio RX data");
 
         /* Callback function for received radio frame */
         radio_receive_cb(msg);
-
-        k_heap_free(&radio_heap, msg->data);
-        k_heap_free(&radio_heap, msg);
     }
 }
 
@@ -176,6 +161,7 @@ void radio_irq_handler(void *ctx)
             LOG_ERR("Unknown radio state in IRQ: %d", state);
         }
     }
+    LOG_DBG("Radio IRQ finished");
 }
 
 /**

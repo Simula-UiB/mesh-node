@@ -13,7 +13,7 @@
 #include <nrfx_power.h>
 
 #include <common.h>
-#include <msg.h>
+#include <message.h>
 
 #include <ipc.h>
 #include <node.h>
@@ -59,7 +59,7 @@ void main(void)
 /**
  * @brief Callback for received radio frames
  */
-void radio_receive_cb(struct mesh_msg *msg)
+void radio_receive_cb(struct message *msg)
 {
     node_enqueue(msg);
 }
@@ -69,23 +69,27 @@ void radio_receive_cb(struct mesh_msg *msg)
  *
  * Forward messages to mesh network
  */
-void ipc_receive_cb(struct mesh_msg *msg)
+void ipc_receive_cb(struct message *msg)
 {
-    if (msg->len > MAX_MESSAGE_SIZE)
+    if (msg->payload_len > MAX_PAYLOAD_SIZE)
     {
-        LOG_ERR("IPC message too large: %d", msg->len);
+        LOG_ERR("IPC message too large: %d", msg->payload_len);
         return;
     }
-
-    int ret = node_send(msg->data, msg->len);
+    LOG_DBG("ipc_receive_cb()");
+    int ret = node_send(msg);
     if (ret != 0)
     {
         LOG_ERR("Node send failed with: %d", ret);
     }
 }
 
-void node_receive(struct mesh_msg *msg)
+void node_receive(struct message *msg)
 {
-    LOG_HEXDUMP_DBG(msg->data, msg->len, "Node RX data");
-    ipc_send(msg);
+    LOG_HEXDUMP_DBG(msg->payload, msg->payload_len, "Node RX data");
+    int ret = ipc_send(msg);
+    if (ret < 0)
+    {
+        LOG_ERR("IPC send failed with %d", ret);
+    }
 }

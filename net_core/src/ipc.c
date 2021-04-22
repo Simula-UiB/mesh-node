@@ -21,13 +21,13 @@
 #include <ipc/rpmsg_service.h>
 
 #include <common.h>
-#include <msg.h>
+#include <message.h>
 
 #include <ipc.h>
 
 LOG_MODULE_REGISTER(ipc, GLOBAL_LOG_LEVEL);
 
-K_HEAP_DEFINE(ipc_heap, (sizeof(struct mesh_msg) + MAX_MESSAGE_SIZE) * 10);
+uint8_t ipc_send_buf[MAX_MESSAGE_SIZE];
 
 static int endpoint_id;
 
@@ -35,38 +35,23 @@ int rpmsg_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src,
              void *priv)
 {
     /* Fill IPC message struct */
-    struct mesh_msg *msg = (struct mesh_msg *)k_heap_alloc(&ipc_heap, sizeof(struct mesh_msg), K_NO_WAIT);
+    struct message *msg = message_from_buffer(data, len);
     if (msg == NULL)
     {
-        LOG_ERR("Cannot allocate heap memory");
+        LOG_INF("Failed to parse msg.");
         return RPMSG_ERR_NO_MEM;
     }
-    msg->data = (uint8_t *)k_heap_alloc(&ipc_heap, len, K_NO_WAIT);
-    if (msg->data == NULL)
-    {
-        LOG_ERR("Cannot allocate heap memory");
-        return RPMSG_ERR_NO_MEM;
-    }
-    msg->len = len;
-    memcpy(msg->data, data, len);
 
     /* Call callback function with ipc message */
     ipc_receive_cb(msg);
 
-    k_heap_free(&ipc_heap, msg->data);
-    k_heap_free(&ipc_heap, msg);
-
     return RPMSG_SUCCESS;
 }
 
-int ipc_send(struct mesh_msg *msg)
+int ipc_send(struct message *msg)
 {
-    int ret = rpmsg_service_send(endpoint_id, msg->data, msg->len);
-    if (ret < 0)
-    {
-        return ret;
-    }
-    return 0;
+    size_t size = message_to_buffer(ipc_send_buf, msg);
+    return rpmsg_service_send(endpoint_id, ipc_send_buf, size);
 }
 
 /* Register endpoint before RPMsg Service is initialized. */

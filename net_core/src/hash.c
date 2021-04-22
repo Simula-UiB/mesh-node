@@ -2,7 +2,8 @@
 #include <stdio.h>
 
 #include <common.h>
-#include <msg.h>
+#include <message.h>
+
 #include <node.h>
 
 #include <logging/log.h>
@@ -23,6 +24,8 @@ size_t hash_size = 0;
 
 // TODO Find out why this is too small without the constant.
 K_HEAP_DEFINE(hash_heap, sizeof(struct node) * MAX_HASH_COUNT_LIMIT * 8);
+
+K_MUTEX_DEFINE(hash_mutex);
 
 uint32_t queue[MAX_HASH_COUNT_LIMIT];
 size_t queue_back = MAX_HASH_COUNT_LIMIT - 1;
@@ -55,23 +58,23 @@ uint32_t dequeue()
 }
 
 /* Based on djb2 */
-uint32_t hash_packet(struct mesh_msg *msg)
+uint32_t hash_packet(struct message *msg)
 {
     uint32_t hash = 5381;
 
-    for (size_t i = 0; i < 6; i++)
+    for (size_t i = 0; i < MAC_LEN; i++)
     {
-        hash += (hash << 5) + msg->data[ORIGINAL_SRC_MAC_POS + i];
+        hash += (hash << 5) + msg->src_mac[i];
     }
-    for (size_t i = 0; i < 6; i++)
+    for (size_t i = 0; i < MAC_LEN; i++)
     {
-        hash += (hash << 5) + msg->data[DST_MAC_POS + i];
+        hash += (hash << 5) + msg->dst_mac[i];
     }
-    hash += (hash << 5) + msg->data[MSG_NUMBER_POS];
-    hash += (hash << 5) + msg->data[PAYLOAD_LENGTH_POS];
-    for (size_t i = DATA_POS; i < msg->len; i++)
+    hash += (hash << 5) + msg->msg_number;
+    hash += (hash << 5) + msg->payload_len;
+    for (size_t i = 0; i < msg->payload_len; i++)
     {
-        hash += (hash << 5) + msg->data[i];
+        hash += (hash << 5) + msg->payload[i];
     }
 
     return hash;
@@ -114,7 +117,8 @@ void hash_remove(uint32_t hash_val)
  */
 void hash_add(uint32_t hash_val)
 {
-    if (hash_size >= MAX_HASH_COUNT_LIMIT)
+    k_mutex_lock(&hash_mutex, K_FOREVER);
+    while (hash_size >= MAX_HASH_COUNT_LIMIT)
     {
         uint32_t old_hash = dequeue();
         hash_remove(old_hash);
@@ -132,6 +136,7 @@ void hash_add(uint32_t hash_val)
     new_node->next = buckets[bucket];
     buckets[bucket] = new_node;
     hash_size++;
+    k_mutex_unlock(&hash_mutex);
 }
 
 bool hash_contains(uint32_t hash_val)
