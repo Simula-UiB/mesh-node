@@ -34,6 +34,10 @@ static int endpoint_id;
 int rpmsg_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src,
              void *priv)
 {
+    if (len == 0)
+    {
+        return RPMSG_SUCCESS;
+    }
     /* Fill IPC message struct */
     struct message *msg = message_from_buffer(data, len);
     if (msg == NULL)
