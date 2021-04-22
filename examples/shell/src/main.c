@@ -56,6 +56,7 @@ SHELL_CMD_REGISTER(mesh, &sub_mesh, "Mesh commands", NULL);
 void main(void)
 {
     LOG_INF("Shell application on app core started.");
+    init_mesh();
 }
 
 /**
