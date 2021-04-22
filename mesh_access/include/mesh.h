@@ -6,9 +6,9 @@
  * Must be ran before messages can be received.
  * 
  */
-void init_mesh()
+void init_mesh();
 
-    /**
+/**
  * @brief Broadcast a message through mesh network.
  *
  * Message length must be less than MAX_PAYLOAD_SIZE
@@ -20,7 +20,7 @@ void init_mesh()
  * @returns Number of bytes sent, or negative error code if there was an error.
  *
  */
-    int mesh_send_broadcast(uint8_t *data, size_t len);
+int mesh_send_broadcast(uint8_t *data, size_t len);
 
 /**
  * @brief Send message to a given address through the mesh network.
