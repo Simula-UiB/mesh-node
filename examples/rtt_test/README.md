@@ -17,4 +17,4 @@ In the serial console of the transmitter, the two-way latency will be printed on
 
 # Automated test script
 
-See [measure\_latency.py](measure_latency.py)
+See [measure\_rtt.py](measure_rtt.py)
