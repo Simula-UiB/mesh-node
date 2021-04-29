@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include <common.h>
 #include <mesh.h>
 
 void main(void)
