@@ -15,22 +15,24 @@
 
 LOG_MODULE_REGISTER(main, GLOBAL_LOG_LEVEL);
 
-uint8_t marco[5];
-uint8_t polo[4];
+uint8_t marco[8];
+size_t len_marco;
+
+uint8_t polo[8];
+size_t len_polo;
 
 void main(void)
 {
     LOG_INF("Example app on app core started.");
     init_mesh();
 
-    sprintf(marco, "marco");
-    sprintf(polo, "polo");
+    len_marco = sprintf(marco, "marco");
+    len_polo = sprintf(polo, "polo");
 }
 
 int cmd_marco(const struct shell *shell, size_t argc, char **argv)
 {
-    LOG_INF("sending");
-    mesh_send_broadcast(marco, 5);
+    mesh_send_broadcast(marco, len_marco);
     return 0;
 }
 
@@ -41,15 +43,13 @@ SHELL_CMD_REGISTER(marco, NULL, "Send marco", cmd_marco);
  */
 void mesh_receive(uint8_t *data, size_t len, uint8_t *src, bool broadcast)
 {
-    LOG_INF("Received mesh message. Length: %d. Broadcast: %s", len, broadcast ? "true" : "false");
-    LOG_HEXDUMP_INF(src, MAC_LEN, "Source:");
-    LOG_HEXDUMP_INF(data, len, "Message");
-    if (memcmp(data, marco, len) == 0)
+    if (memcmp(data, marco, len_marco) == 0)
     {
-        LOG_INF("replying");
-        mesh_send(polo, src, 4);
+        // TODO Find out why this wait is neccesary.
+        k_msleep(1);
+        mesh_send(polo, src, len_polo);
     }
-    else if (memcmp(data, polo, len) == 0)
+    else if (memcmp(data, polo, len_polo) == 0)
     {
         LOG_HEXDUMP_INF(src, MAC_LEN, "Got polo from source:");
     }
