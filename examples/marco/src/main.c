@@ -45,7 +45,9 @@ void mesh_receive(uint8_t *data, size_t len, uint8_t *src, bool broadcast)
 {
     if (memcmp(data, marco, len_marco) == 0)
     {
-        // TODO Find out why this wait is neccesary.
+        // TODO Find out why this wait is needed. Witout it the receiver will
+        // not receive the message. This only happens if this message was
+        // received as broadcast.
         k_msleep(1);
         mesh_send(polo, src, len_polo);
     }
