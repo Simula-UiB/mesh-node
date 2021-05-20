@@ -16,14 +16,32 @@
 #include <nrfx_clock.h>
 #include <nrfx_power.h>
 
-#include <common.h>
+#include <device.h>
+#include <drivers/gpio.h>
 
+#include <common.h>
 #include <radio.h>
 
-#define MSG_SIZE 255
-#define MSG_COUNT 100000
+#define L0_NODE DT_ALIAS(led0)
+
+#define L0_GPIO_LABEL DT_GPIO_LABEL(L0_NODE, gpios)
+#define L0_GPIO_PIN DT_GPIO_PIN(L0_NODE, gpios)
+#define L0_GPIO_FLAGS (GPIO_INPUT | DT_GPIO_FLAGS(L0_NODE, gpios))
+
+#define MSG_SIZE 10
+#define MSG_COUNT 1000
 
 LOG_MODULE_REGISTER(main, GLOBAL_LOG_LEVEL);
+
+static struct gpio_callback gpio_cb_data;
+static const struct device *led0;
+
+static bool sending = false;
+
+void gpio_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
+{
+    sending = true;
+}
 
 /**
  * @brief Initialize power and clock peripherals
@@ -59,19 +77,33 @@ void main(void)
     init_radio();
     LOG_INF("Radio initialized");
 
-    double lambda = 0.5;
+    /* GPIO */
+    led0 = device_get_binding(L0_GPIO_LABEL);
+    gpio_pin_configure(led0, L0_GPIO_PIN, L0_GPIO_FLAGS);
+    gpio_pin_interrupt_configure(led0, L0_GPIO_PIN, GPIO_INT_EDGE_TO_ACTIVE);
+    gpio_init_callback(&gpio_cb_data, gpio_callback, BIT(L0_GPIO_PIN));
+    gpio_add_callback(led0, &gpio_cb_data);
+    gpio_pin_set(led0, L0_GPIO_PIN, 0);
+
+    double alpha = 1;
+    double lambda = 1/(0.5*(MSG_SIZE+1)*alpha);
     uint32_t count = 0;
 
     k_msleep(4000);
+    
+    uint8_t data[MSG_SIZE] = {0};
 
     while (true) 
     {
-        uint8_t data[MSG_SIZE] = {0};
-        k_usleep(10 + (int)(delay(lambda)*1000));
-        radio_send(data, MSG_SIZE);
-        LOG_INF("Sent zero packet. Length: %d", MSG_SIZE);
-        if (++count >= MSG_COUNT) {
-            break;
+        k_usleep((int)(delay(lambda)));
+        if (sending)
+        {
+            radio_send(data, MSG_SIZE);
+            LOG_INF("Sent zero packet. Length: %d", MSG_SIZE);
+            if (++count >= MSG_COUNT) {
+                sending = false;
+                count = 0;
+            }
         }
     }
 }

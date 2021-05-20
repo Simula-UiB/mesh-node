@@ -12,18 +12,31 @@
 #include <nrfx_clock.h>
 #include <nrfx_power.h>
 
+#include <device.h>
+#include <drivers/gpio.h>
+
 #include <common.h>
 
 #include <radio.h>
 
-#define MSG_SIZE 255
+#define L0_NODE DT_ALIAS(led0)
+
+#define L0_GPIO_LABEL DT_GPIO_LABEL(L0_NODE, gpios)
+#define L0_GPIO_PIN DT_GPIO_PIN(L0_NODE, gpios)
+#define L0_GPIO_FLAGS (GPIO_OUTPUT | DT_GPIO_FLAGS(L0_NODE, gpios))
+
 #define MSG_COUNT 1000
+#define NODES 3
+#define MAX_PKTS (MSG_COUNT*NODES)
+#define PKT_LEN 10
 
-LOG_MODULE_REGISTER(main, GLOBAL_LOG_LEVEL);
+LOG_MODULE_REGISTER(main, LOG_LEVEL_ERR);
 
-static uint32_t bit_errors = 0;
+static const struct device *led0;
+
 static uint32_t packets_received = 0;
-static uint32_t bits_received = 0;
+static uint32_t packet_index = 0;
+static uint32_t bit_errors[MAX_PKTS] = {0};
 
 /**
  * @brief Initialize power and clock peripherals
@@ -51,11 +64,50 @@ void main(void)
     init_radio();
     LOG_INF("Radio initialized");
 
-    while (true)
+    /* GPIO */
+    led0 = device_get_binding(L0_GPIO_LABEL);
+    gpio_pin_configure(led0, L0_GPIO_PIN, L0_GPIO_FLAGS);
+    gpio_pin_set(led0, L0_GPIO_PIN, 0);
+    LOG_INF("GPIO initialized");
+
+    k_msleep(10000);
+
+    /* How many times should we ask for packets */
+    uint32_t rounds = 100;
+
+    printk("STARTING\n");
+
+    for (uint32_t i = 0; i < rounds; i++)
     {
-        k_msleep(2000);
-        printk("packets: %d, bits_received: %d, bit_errors: %d\n", packets_received, bits_received, bit_errors);
+        /* Tell tx to start sending */
+        LOG_INF("Starting round %d", i);
+        gpio_pin_set(led0, L0_GPIO_PIN, 1);
+        k_msleep(10);
+        gpio_pin_set(led0, L0_GPIO_PIN, 0);
+
+
+        k_msleep(1000);
+
+        uint32_t received = packets_received;
+        while (true)
+        {
+            k_msleep(1000);
+            if (received == packets_received)
+            {
+                LOG_INF("No packets received in last second. Received: %d", received);
+                /* No packets received in a second, report results and go to next batch. */
+                for (uint32_t j = 0; j < packet_index; j++)
+                {
+                    printk("%d\n", bit_errors[j]);
+                    k_usleep(50);
+                }
+                break;
+            }
+            received = packets_received;
+        }
+        packet_index = 0;
     }
+    printk("DONE\n");
 }
 
 /**
@@ -63,7 +115,9 @@ void main(void)
  */
 void radio_receive_cb(uint32_t ones, uint32_t length)
 {
-    packets_received++;
-    bit_errors += ones;
-    bits_received += 8*length;
+    if (length == PKT_LEN)
+    {
+        packets_received++;
+        bit_errors[packet_index++] = ones;
+    }
 }
