@@ -13,7 +13,7 @@ The project is implemented as a [Zephyr RTOS](https://github.com/zephyrproject-r
 
 ![overview](overview.png)
 
-## Latency measurements
+## Latency
 
 Below, we show latency recorded for a 1 byte single-hop message. In particular, we show the CCDF, i.e., the probability of the latency exceeding a particular value. For reference, we also show latency recorded for Bluetooth Mesh and OpenThread. 
 Latency for the custom node and for Bluetooth Mesh is recorded over a wired coaxial network, whereas for OpenThread latency is recorded over a wireless network. 
