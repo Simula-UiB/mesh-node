@@ -16,6 +16,8 @@ The project is implemented in the [Zephyr RTOS](https://github.com/zephyrproject
 
 ## Latency measurements
 
-Below is the CCDF showing the measured one-way latency of a 1 byte message in a single hop. We compare this project to Bluetooth Mesh and OpenThread.
+Below is the CCDF showing the measured one-way latency of a 1 byte message in a single hop. We compare this project to Bluetooth Mesh and OpenThread. 
+Latency for the custom node and for Bluetooth Mesh is recorded over a wired coaxial network, whereas for OpenThread latency is recorded over a wireless network. 
+We expect that the minimum latency of OpenThread would be similar for a wired network, but that we would see different behaviour below about the `10^-2-th` percentile.
 
 ![latency figure](latency.png)
