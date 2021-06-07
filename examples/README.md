@@ -6,3 +6,4 @@
 * [rtt\_test](rtt_test/): Application for measuring round-trip time.
 * [ping](ping/): Application that will reply immediately to any received message.
 * [shell](shell/): Simple CLI example that can send messages.
+* [marco](marco/): Application that can send "marco", and replies "polo" if it receives "marco".
