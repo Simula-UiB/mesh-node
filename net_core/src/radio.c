@@ -13,7 +13,7 @@
 LOG_MODULE_REGISTER(radio, GLOBAL_LOG_LEVEL);
 
 /* Radio TX power */
-#define TX_POWER NRF_RADIO_TXPOWER_NEG40DBM
+#define TX_POWER NRF_RADIO_TXPOWER_0DBM
 
 /* Radio buffer offsets */
 #define RF_BUFFER_LENGTH_OFFSET 0
@@ -143,7 +143,10 @@ void radio_irq_handler(void *ctx)
         if (NRF_RADIO_STATE_RXIDLE == state)
         {
             /* RX Complete */
-            k_sem_give(&rf_rx_sem);
+            if (nrf_radio_crc_status_check(NRF_RADIO))
+            {
+                k_sem_give(&rf_rx_sem);
+            }
             /* Start new RX, we are already ramped up */
             nrf_radio_task_trigger(NRF_RADIO, NRF_RADIO_TASK_START);
         }
@@ -221,9 +224,9 @@ void init_radio()
 
     /* CRC Config */
     nrf_radio_crc_configure(NRF_RADIO,
-                            RADIO_CRCCNF_LEN_Disabled, // Disable CRC
+                            2, // 2 byte CRC
                             NRF_RADIO_CRC_ADDR_INCLUDE,
-                            0);
+                            0x1021); // Polynomial: x16 + x12 + x5 + 1
 
     /* Shortcuts */
     nrf_radio_shorts_enable(NRF_RADIO, NRF_RADIO_SHORT_READY_START_MASK); // Ready -> Start shortcut
